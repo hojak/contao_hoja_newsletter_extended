@@ -1,0 +1,36 @@
+<?php
+	$image_width = 200;
+	$image_height = 140;
+?>
+<div class="nl_header">
+
+	<h1><?= $this->headline ?></h1>
+	<h2><?= $this->hoja_nl_subheadline ?></h2>
+
+	
+	<p class="navigation">
+		<?php foreach ( $this->nav_items as $desc ): ?>
+		<span><a href="#content_<?= $desc['id'] ?>">
+		<?= $desc['headline'] ?>
+		</a></span>
+		<?php endforeach; ?>
+		
+		<span><a href="#impressum">Impressum</a></span>
+	</p>
+
+
+	<?php if ( $this->image ): ?>
+		<span class="image">
+		<?php if ($this->imageUrl): ?>
+			<a href="<?php echo $this->imageUrl; ?>"<?php if ($this->linkTitle): ?> title="<?php echo $this->linkTitle; ?>"<?php endif; ?>>
+		<?php endif; ?>
+			{{image::<?= $this->image->path ?>?width=<?= $imagewidth ?>&height=<?= $image_height ?>&mode=proportional}}
+		<?php if ($this->imageUrl): ?>
+			</a>
+		<?php endif; ?>
+		</span>
+	<?php endif; ?>
+	
+
+	
+</div>
