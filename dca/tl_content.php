@@ -30,23 +30,21 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['hoja_nl_header_subheadline'] = array
 	'sql'		=> "varchar(255) NOT NULL default ''",
 );
 
-
-	
-	
- 
  
 
 /**
  * Dynamically add the permission check and parent table
  */
-if ($this->Input->get('do') == 'newsletter' || (\Input::get('table') == 'tl_content' && \Input::get('field') == 'type')) {
+if ($this->Input->get('do') == 'newsletter' ) { 
+	/*|| (\Input::get('table') == 'tl_content' && \Input::get('field') == 'type')) {*/
 	$GLOBALS['TL_DCA']['tl_content']['config']['ptable'] = 'tl_newsletter';
 	$GLOBALS['TL_DCA']['tl_content']['config']['onload_callback'][] = array('tl_content_newsletter_extended', 'checkPermission');
 	$GLOBALS['TL_DCA']['tl_content']['list']['sorting']['headerFields'] = array('subject', 'alias', 'useSMTP');
 
+	$GLOBALS['TL_HOOKS']['parseTemplate'][] = array('tl_content_newsletter_extended', 'addTemplatePrefix');
 
 	// remove some palette fields
-	foreach ($arrPalettes as $k => $strPalette) {
+	foreach ($GLOBALS['TL_DCA']['tl_content']['palettes'] as $k => $strPalette) {
 		$GLOBALS['TL_DCA']['tl_content']['palettes'][$k] = str_replace(
 			array(
 				',guests,',
@@ -61,16 +59,6 @@ if ($this->Input->get('do') == 'newsletter' || (\Input::get('table') == 'tl_cont
 			$strPalette
 		);
 	}
-	
-	$GLOBALS['TL_DCA']['tl_content']['fields']['customTpl']['options_callback'] = array('tl_content_newsletter_extended', 'getNewsletterElementTemplates');
-
-
-	
-	$GLOBALS['TL_HOOKS']['parseTemplate'][] = array('tl_content_newsletter_extended', 'addTemplatePrefix');
-	
-	
-	
-
 }
 
 

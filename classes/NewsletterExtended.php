@@ -17,6 +17,7 @@
 namespace HoJa\NLExtended;
 
 
+
 /**
  * Class NewsletterContent
  *
@@ -41,6 +42,8 @@ class NewsletterExtended extends \Newsletter {
 	 * @return string
 	 */
 	public function send(\DataContainer $objDc) {
+		// otherwise, the dca of tl_content is not loaded, if the internal cache is active
+		$this->loadDataContainer('tl_content'); 
 
 		if (TL_MODE == 'BE') {
 			$GLOBALS['TL_CSS'][] = 'system/modules/hoja_newsletter_extended/assets/css/style.css';
