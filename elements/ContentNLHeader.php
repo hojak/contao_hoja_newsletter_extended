@@ -68,16 +68,9 @@ class ContentNLHeader extends \Contao\ContentElement
 		if ( $nlContent ) 
 			foreach ( $nlContent as $element ) {
 				if ( $element->id != $this->id ) {
-					$headline = unserialize ( $element->headline );
-					$hl = $headline['value'];
-					
-					if ( ! $hl && $first ) {
-						$first = false;
-						$hl = "Einleitung";
+					if ( $element->hoja_nl_headerlink_text) {
+						$content_items[] = array ( "id" => $element->id, "linktext" => $element->hoja_nl_headerlink_text );
 					}
-					
-					if ( $hl )
-						$content_items[] = array ( "id" => $element->id, "headline" => $hl );
 				}
 			}
 		

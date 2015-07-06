@@ -31,6 +31,25 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['hoja_nl_header_subheadline'] = array
 );
 
  
+ 
+$GLOBALS['TL_DCA']['tl_content']['fields']['hoja_nl_headerlink_text'] = array (
+	'label'		=> &$GLOBALS['TL_LANG']['tl_content']['hoja_nl_headerlink_text'],
+	'exclude'	=> true,
+	'inputType' => 'text',
+	'eval'       => array('tl_class' => 'w50'),
+	'sql'		=> "varchar(255) NOT NULL default ''",
+);
+
+$GLOBALS['TL_DCA']['tl_content']['fields']['hoja_nl_content_template'] = array (
+	'label'		=> &$GLOBALS['TL_LANG']['tl_content']['hoja_nl_content_template'],
+	'exclude'	=> true,
+	'inputType' => 'select',
+	'options_callback' => array ( 'tl_content_newsletter_extended', 'getTemplateOptions' ),
+	'eval'       => array('tl_class' => 'w50', 'includeBlankOption' => true),
+	'sql'		=> "varchar(255) NOT NULL default ''",
+);
+
+
 
 /**
  * Dynamically add the permission check and parent table
@@ -41,8 +60,10 @@ if ($this->Input->get('do') == 'newsletter' ) {
 	$GLOBALS['TL_DCA']['tl_content']['config']['onload_callback'][] = array('tl_content_newsletter_extended', 'checkPermission');
 	$GLOBALS['TL_DCA']['tl_content']['list']['sorting']['headerFields'] = array('subject', 'alias', 'useSMTP');
 
-	$GLOBALS['TL_HOOKS']['parseTemplate'][] = array('tl_content_newsletter_extended', 'addTemplatePrefix');
+	$GLOBALS['TL_HOOKS']['parseTemplate'][] = array('tl_content_newsletter_extended', 'adaptTemplate');
 
+	
+	
 	// remove some palette fields
 	foreach ($GLOBALS['TL_DCA']['tl_content']['palettes'] as $k => $strPalette) {
 		$GLOBALS['TL_DCA']['tl_content']['palettes'][$k] = str_replace(
@@ -54,10 +75,11 @@ if ($this->Input->get('do') == 'newsletter' ) {
 			array(
 				',',
 				',',
-				''
+				'{hoja_nl_legend},hoja_nl_headerlink_text,hoja_nl_content_template;'
 			),
 			$strPalette
 		);
+		
 	}
 }
 
@@ -235,22 +257,54 @@ class tl_content_newsletter_extended extends Backend {
 	}
 
 	
-	public function addTemplatePrefix($objTemplate)
+	
+	/**
+	 * parse template hook
+	 *
+	 * if we're rendering a content element of a newsletter, use the template of the template
+	 * override field hoja_nl_content_template. If this field is not set, see, if the newsletter
+	 * defines a template prefix. If so, add this to the current template name.
+	 * Leave everything untouched otherwise.
+	 *
+	 * @param $objTemplate the current template oject to render
+	 */
+	public function adaptTemplate($objTemplate)
 	{
 		// get the current prefix
 		if ( $objTemplate->ptable == "tl_newsletter" ) {
-			$pid = $objTemplate->pid;
-			$dbNl = $this->Database->prepare('SELECT hoja_template_prefix FROM tl_newsletter WHERE id=?')->execute($pid);
+			if ( $objTemplate->hoja_nl_content_template ) {
+				$objTemplate->setName ($objTemplate->hoja_nl_content_template );
+			} else {
+				$pid = $objTemplate->pid;
+				$dbNl = $this->Database->prepare('SELECT hoja_template_prefix FROM tl_newsletter WHERE id=?')->execute($pid);
 
-			$templPrefix = $dbNl->hoja_template_prefix;
-			
-			try {
-				$found = $objTemplate->getTemplate ( $templPrefix . $objTemplate->getName() );
-				$objTemplate->setName ($templPrefix . $objTemplate->getName()) ;
-			} catch ( Exception $e ) {
-				// ok, template with prefix does not exist! 
+				$templPrefix = $dbNl->hoja_template_prefix;
+				
+				try {
+					$found = $objTemplate->getTemplate ( $templPrefix . $objTemplate->getName() );
+					$objTemplate->setName ($templPrefix . $objTemplate->getName()) ;
+				} catch ( Exception $e ) {
+					// ok, template with prefix does not exist! 
+				}
 			}
 		}
+	}
+	
+	/**
+	 * options_callback
+	 *
+	 * get all nl_ prefixed templates from the root level
+	 */
+	public function getTemplateOptions ( $dc ) {
+		$group = Controller::getTemplateGroup('nl_');
+		
+		$result = array ();
+		foreach ( $group as $template ) {
+			if ( strpos ( $template, '(') === false )
+				$result[] = $template;
+		}
+		
+		return $result;
 	}
 
 	
