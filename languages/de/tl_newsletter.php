@@ -8,3 +8,5 @@ $GLOBALS['TL_LANG']['tl_newsletter']['hoja_piwik_campaign'] = array ('Piwki-Kamp
 
 $GLOBALS['TL_LANG']['tl_newsletter']['hoja_tracking_legend'] = 'Empfänger-Verfolgung';
 $GLOBALS['TL_LANG']['tl_newsletter']['hoja_files_legend'] = 'Datei-Einstellungen';
+
+$GLOBALS['TL_LANG']['tl_newsletter']['hoja_status_string'] = "Empfänger: %d, Zurückgewiesen: %d";

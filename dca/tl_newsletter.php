@@ -61,8 +61,23 @@ $GLOBALS['TL_DCA']['tl_newsletter']['fields']['hoja_piwik_campaign'] = array (
 	'sql'                     => "varchar(255) NULL"
 );
 
+$GLOBALS['TL_DCA']['tl_newsletter']['fields']['hoja_rejected'] = array(
+	'sql'                     => "int(10) unsigned NOT NULL default '0'"
+);
+
+$GLOBALS['TL_DCA']['tl_newsletter']['fields']['hoja_recipients'] = array(
+	'sql'                     => "int(10) unsigned NOT NULL default '0'"
+);
+
 
 class tl_newsletter_extended extends tl_newsletter {
+
+	/**
+	 * Import the back end user object
+	 */
+	public function __construct() {
+		parent::__construct();
+	}
 
 	/**
 	 * Add the type of input field
@@ -79,6 +94,12 @@ class tl_newsletter_extended extends tl_newsletter {
 				$strContents.= $this->getContentElement($objContent->id) . '<hr>';
 			}
 		}
+
+		$strStats = sprintf ( 
+			$GLOBALS['TL_LANG']['tl_newsletter']['hoja_status_string'], 
+			$arrRow['hoja_recipients'], 
+			$arrRow['hoja_rejected'] 
+		);
 
 
 		return '

@@ -98,6 +98,7 @@ class tl_content_newsletter_extended extends Backend {
 		$this->import('BackendUser', 'User');
 
 		//$GLOBALS['TL_CSS'][] = 'system/modules/newsletter_content/assets/css/multicolumnwizard.css';
+		
 	}
 
 
@@ -302,6 +303,21 @@ class tl_content_newsletter_extended extends Backend {
 		foreach ( $group as $template ) {
 			if ( strpos ( $template, '(') === false )
 				$result[] = $template;
+		}
+		
+		return $result;
+	}
+	
+	
+	public function getContentElements ( \DataContainer $dc ) {
+		$result = "";
+	
+		$objContentElements = \ContentModel::findPublishedByPidAndTable($dc->id, 'tl_newsletter');
+
+		if ($objContentElements !== null) {
+			while ($objContentElements->next()) {
+				$$result.= $this->getContentElement($objContentElements->id);
+			}
 		}
 		
 		return $result;

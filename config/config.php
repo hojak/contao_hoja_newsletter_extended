@@ -22,3 +22,4 @@ $GLOBALS['BE_MOD']['content']['newsletter']['send'] = array('HoJa\\NLExtended\\N
 
 $GLOBALS['TL_CTE']['newsletter']['hoja_nl_header'] = 'HoJa\\NLExtended\\ContentNLHeader';
 
+$GLOBALS['FE_MOD']['newsletter']['hoja_nl_reader'] = 'HoJa\\NLExtended\\ModuleNewsletterReader';

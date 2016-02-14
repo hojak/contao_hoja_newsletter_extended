@@ -229,7 +229,7 @@ class NewsletterExtended extends \Newsletter {
 				if (!empty($_SESSION['REJECTED_RECIPIENTS']))
 				{
 					$intRejected = count($_SESSION['REJECTED_RECIPIENTS']);
-					\Message::addInfo(sprintf($GLOBALS['TL_LANG']['tl_newsletter']['rejected'], $intRejected));
+					\Message::addInfo(sprintf($GLOBALS['TL_LANG']['tl_newsletter']['hoja_rejected'], $intRejected));
 					$intTotal -= $intRejected;
 
 					foreach ($_SESSION['REJECTED_RECIPIENTS'] as $strRecipient)
@@ -241,7 +241,7 @@ class NewsletterExtended extends \Newsletter {
 					}
 				}
 
-				$this->Database->prepare("UPDATE tl_newsletter SET recipients=?, rejected=? WHERE id=?")
+				$this->Database->prepare("UPDATE tl_newsletter SET hoja_recipients=?, hoja_rejected=? WHERE id=?")
 							   ->execute($intTotal, $intRejected, $objNewsletter->id);
 
 				\Message::addConfirmation(sprintf($GLOBALS['TL_LANG']['tl_newsletter']['confirm'], $intTotal));

@@ -28,6 +28,9 @@ ClassLoader::addClasses(array
 
 	// Elements
 	'HoJa\NLExtended\ContentNLHeader'    => 'system/modules/hoja_newsletter_extended/elements/ContentNLHeader.php',
+	
+	// MOdules
+	'HoJa\NLExtended\ModuleNewsletterReader' => 'system/modules/hoja_newsletter_extended/modules/ModuleNewsletterReader.php',
 ));
 
 
@@ -37,4 +40,5 @@ ClassLoader::addClasses(array
 TemplateLoader::addFiles(array
 (
 	'ce_hoja_nl_header' => 'system/modules/hoja_newsletter_extended/templates',
+	'mod_hoja_newsletter_reader' => 'system/modules/hoja_newsletter_extended/templates',
 ));
