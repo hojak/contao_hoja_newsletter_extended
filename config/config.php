@@ -20,6 +20,6 @@ $GLOBALS['BE_MOD']['content']['newsletter']['tables'][]  = 'tl_content';
 
 $GLOBALS['BE_MOD']['content']['newsletter']['send'] = array('HoJa\\NLExtended\\NewsletterExtended', 'send');
 
-$GLOBALS['TL_CTE']['newsletter']['hoja_nl_header'] = 'HoJa\\NLExtended\\ContentNLHeader';
+$GLOBALS['TL_CTE']['hoja_newsletter']['hoja_nl_header'] = 'HoJa\\NLExtended\\ContentNLHeader';
 
-$GLOBALS['FE_MOD']['newsletter']['hoja_nl_reader'] = 'HoJa\\NLExtended\\ModuleNewsletterReader';
+$GLOBALS['FE_MOD']['hoja_newsletter']['hoja_nl_reader'] = 'HoJa\\NLExtended\\ModuleNewsletterReader';

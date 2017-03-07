@@ -23,21 +23,21 @@ class ContentNLHeader extends \Contao\ContentElement
 	
 	public function generate () 
 	{
-		/*
-		if (TL_MODE == 'BE')
+
+		if (TL_MODE == 'BE' && \Input::get('key') != send)
 		{
 			$objTemplate = new \BackendTemplate('be_wildcard');
 
 			$objTemplate->wildcard = 
-				"### MEye Newsletter-Header (be_mode) ###";
+				"### Newsletter-Header ###";
 			
 			$objTemplate->title = $this->headline;
 			$objTemplate->id = $this->id;
 			$objTemplate->link = $this->name;
-			$objTemplate->href = 'contao/main.php?do=themes&amp;table=tl_module&amp;act=edit&amp;id=' . $this->id;
+			//$objTemplate->href = 'contao/main.php?do=themes&amp;table=tl_module&amp;act=edit&amp;id=' . $this->id;
 
 			return $objTemplate->parse();
-		}*/
+		}
 
 		return parent::generate();
 	}
@@ -75,7 +75,39 @@ class ContentNLHeader extends \Contao\ContentElement
 			}
 		
 		$this->Template->nav_items = $content_items;
+
+        $newsletter = \NewsletterModel::findById ( $this->pid );
+
+        $this->Template->linkWebView = $this->_getWebViewLink ( $newsletter );
+        $this->Template->newsletter = $newsletter;
 	}
+
+
+
+    /**
+     * get the absolute weblink for the web view of the given newsletter
+     * @param \NewsletterModel $newsletter
+     * @return
+     */
+    protected function _getWebViewLink ( \NewsletterModel $newsletter ) {
+        if (($letterGroup = $newsletter->getRelated('pid')) === null)
+        {
+            return null;
+        }
+
+        if (intval($letterGroup->jumpTo) < 1) {
+            return null;
+        }
+
+        $jumpTo = $letterGroup->getRelated('jumpTo')->loadDetails();
+        if ( $jumpTo === null )
+            return null;
+
+        $baseAddress = $this->generateFrontendUrl($jumpTo->row(), ((\Config::get('useAutoItem') && !\Config::get('disableAlias')) ?  '/%s' : '/items/%s'));
+        $alias = ($newsletter->alias != '' && !\Config::get('disableAlias')) ? $newsletter->alias : $newsletter->id;
+
+        return $this->Environment->url . '/' . sprintf($baseAddress, $alias);
+    }
 	
 	
 

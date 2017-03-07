@@ -2,10 +2,7 @@
 
 <?php $this->block('content'); ?>
 
-  <h1><?= $this->subject ?></h1>
-
   <div class="newsletter">
-    <?= $this->content ?>
     <?= $this->htmlContent ?>
   </div>
 
@@ -16,6 +13,7 @@
       <?php endforeach; ?>
     </div>
   <?php endif; ?>
+
 
   <!-- indexer::stop -->
   <p class="back"><a href="<?= $this->referer ?>" title="<?= $this->back ?>"><?= $this->back ?></a></p>

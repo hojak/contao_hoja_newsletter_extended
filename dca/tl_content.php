@@ -17,6 +17,7 @@
  
  
 /**** elemente fuer den Newsletter-Header ***/
+
 $GLOBALS['TL_DCA']['tl_content']['palettes']['hoja_nl_header'] 
 	= '{type_legend},type;{hoja_nl_header_legend},headline,hoja_nl_header_subheadline;'
 		.'{hoja_nl_header_image_legend},singleSRC,alt,title,imageUrl;'
@@ -50,6 +51,12 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['hoja_nl_content_template'] = array (
 );
 
 
+/**
+ * hook to use the newsletter defined prefix for the template names 
+ */
+$GLOBALS['TL_HOOKS']['parseTemplate'][] = array('tl_content_newsletter_extended', 'adaptTemplate');
+
+
 
 /**
  * Dynamically add the permission check and parent table
@@ -59,10 +66,6 @@ if ($this->Input->get('do') == 'newsletter' ) {
 	$GLOBALS['TL_DCA']['tl_content']['config']['ptable'] = 'tl_newsletter';
 	$GLOBALS['TL_DCA']['tl_content']['config']['onload_callback'][] = array('tl_content_newsletter_extended', 'checkPermission');
 	$GLOBALS['TL_DCA']['tl_content']['list']['sorting']['headerFields'] = array('subject', 'alias', 'useSMTP');
-
-	$GLOBALS['TL_HOOKS']['parseTemplate'][] = array('tl_content_newsletter_extended', 'adaptTemplate');
-
-	
 	
 	// remove some palette fields
 	foreach ($GLOBALS['TL_DCA']['tl_content']['palettes'] as $k => $strPalette) {
@@ -276,10 +279,9 @@ class tl_content_newsletter_extended extends Backend {
 			if ( $objTemplate->hoja_nl_content_template ) {
 				$objTemplate->setName ($objTemplate->hoja_nl_content_template );
 			} else {
-				$pid = $objTemplate->pid;
-				$dbNl = $this->Database->prepare('SELECT hoja_template_prefix FROM tl_newsletter WHERE id=?')->execute($pid);
-
-				$templPrefix = $dbNl->hoja_template_prefix;
+                \NewsletterModel::findById ( $pid );
+                $newsletter = \NewsletterModel::findById ( $objTemplate->pid );
+                $templPrefix = $newsletter->hoja_template_prefix;
 				
 				try {
 					$found = $objTemplate->getTemplate ( $templPrefix . $objTemplate->getName() );
@@ -288,7 +290,7 @@ class tl_content_newsletter_extended extends Backend {
 					// ok, template with prefix does not exist! 
 				}
 			}
-		}
+        }
 	}
 	
 	/**

@@ -32,24 +32,28 @@ class ModuleNewsletterReader extends \Contao\ModuleNewsletterReader
 		parent::compile ();
 	
 		$objNewsletter = \NewsletterModel::findSentByParentAndIdOrAlias(\Input::get('items'), $this->nl_channels);
-		error_log ( "check" );
-		error_log ( $this->id );
 	
 		$html = '';
 		$objContentElements = \ContentModel::findPublishedByPidAndTable($objNewsletter->id, 'tl_newsletter');
-
-		error_log ( $objContentElements );
 		
 		if ($objContentElements !== null) {
 			while ($objContentElements->next()) {
 				$html.= $this->getContentElement($objContentElements->id);
 			}
 		}
+        
+        // add css
+        if ( $css = $objNewsletter->hoja_css_file) {
+            $file = \FilesModel::findByUuid ( $css );
+            $GLOBALS['TL_CSS'][] = $file->path;         
+        }
 
 		// Replace insert tags
-		
 		$html = $this->replaceInsertTags($html);
-	
+        
+        // handle base - #-link problem
+        $html = preg_replace ( '/href="#/', 'href="{{env::path}}{{env::request}}#', $html);
+        
 		$this->Template->htmlContent = $html;
 	}
 }

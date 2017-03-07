@@ -30,11 +30,34 @@ class NewsletterExtended extends \Newsletter {
 
 	protected $isFlexible = false;
 
+
 	protected function __construct() {
 		parent::__construct();
 		$this->import('BackendUser');
 		$this->isFlexible = $this->BackendUser->backendTheme == 'flexible';
+
+        $this->import ( "Environment");
 	}
+
+
+    /**
+     * overwrite SMTP configuration if applicable
+     * @param <unknown> $objNewsletter
+     * @return
+     */
+    protected function _setSMTPConfig ( $objNewsletter ) {
+		if ($objNewsletter->useSMTP) {
+			$GLOBALS['TL_CONFIG']['useSMTP'] = true;
+
+			$GLOBALS['TL_CONFIG']['smtpHost'] = $objNewsletter->smtpHost;
+			$GLOBALS['TL_CONFIG']['smtpUser'] = $objNewsletter->smtpUser;
+			$GLOBALS['TL_CONFIG']['smtpPass'] = $objNewsletter->smtpPass;
+			$GLOBALS['TL_CONFIG']['smtpEnc']  = $objNewsletter->smtpEnc;
+			$GLOBALS['TL_CONFIG']['smtpPort'] = $objNewsletter->smtpPort;
+		}
+    }
+
+
 
 	/**
 	 * Return a form to choose an existing style sheet and import it
@@ -62,16 +85,7 @@ class NewsletterExtended extends \Newsletter {
 			return '';
 		}
 
-		// Overwrite the SMTP configuration
-		if ($objNewsletter->useSMTP) {
-			$GLOBALS['TL_CONFIG']['useSMTP'] = true;
-
-			$GLOBALS['TL_CONFIG']['smtpHost'] = $objNewsletter->smtpHost;
-			$GLOBALS['TL_CONFIG']['smtpUser'] = $objNewsletter->smtpUser;
-			$GLOBALS['TL_CONFIG']['smtpPass'] = $objNewsletter->smtpPass;
-			$GLOBALS['TL_CONFIG']['smtpEnc']  = $objNewsletter->smtpEnc;
-			$GLOBALS['TL_CONFIG']['smtpPort'] = $objNewsletter->smtpPort;
-		}
+        $this->_setSMTPConfig ( $objNewsletter );
 
 		// Add default sender address
 		if ($objNewsletter->sender == '') {
@@ -113,7 +127,12 @@ class NewsletterExtended extends \Newsletter {
 			}
 
 			while ($objContentElements->next()) {
-				$html.= $this->getContentElement($objContentElements->id);
+                // prevent <pre> enclosure of html content elements
+                if ( $objContentElements->type == "html") {
+                    $html .= $objContentElements->html;
+                } else {
+                    $html.= $this->getContentElement($objContentElements->id);
+                }
 			}
 		}
 
@@ -188,7 +207,14 @@ class NewsletterExtended extends \Newsletter {
 			$intPages = \Input::get('mpc') ? \Input::get('mpc') : 10;
 
 			// Get recipients
-			$objRecipients = $this->Database->prepare("SELECT *, r.email FROM tl_newsletter_recipients r LEFT JOIN tl_member m ON(r.email=m.email) WHERE r.pid=? AND r.active=1 GROUP BY r.email ORDER BY r.email")
+            $query =
+                "SELECT *, r.email FROM tl_newsletter_recipients r "
+                ."LEFT JOIN tl_member m ON(r.email=m.email) "
+                ."WHERE r.pid=? AND r.active=1 "
+                //."GROUP BY r.email "
+                ."ORDER BY r.email";
+
+			$objRecipients = $this->Database->prepare($query)
 											->limit($intPages, $intStart)
 											->execute($objNewsletter->pid);
 
@@ -239,7 +265,9 @@ class NewsletterExtended extends \Newsletter {
 
 						$this->log('Recipient address "' . $strRecipient . '" was rejected and has been deactivated', __METHOD__, TL_ERROR);
 					}
-				}
+				} else {
+                    $intRejected = 0;
+                }
 
 				$this->Database->prepare("UPDATE tl_newsletter SET hoja_recipients=?, hoja_rejected=? WHERE id=?")
 							   ->execute($intTotal, $intRejected, $objNewsletter->id);
@@ -294,6 +322,12 @@ class NewsletterExtended extends \Newsletter {
 
 		// Replace inserttags
 		$arrName = explode(' ', $this->User->name);
+
+        $iframeUrl = 'system/cache/newsletter/' . $objNewsletter->alias . '.html';
+
+        // get rid of base <> #-link problem
+        $preview = preg_replace( '/href="#/', 'href="'.$this->Environment->url. "/".$iframeUrl.'#', $preview );
+
 		$preview = $this->replaceInsertTags($preview);
 		//$preview = $this->prepareLinkTracking($preview, $objNewsletter->id, $this->User->email, '&preview=1');
 		$preview = $this->parseSimpleTokens($preview, array(
@@ -309,6 +343,9 @@ class NewsletterExtended extends \Newsletter {
 			'tracker_css' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=css',
 			'tracker_js' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=js'
 		));
+
+
+
 
 		// Create cache folder
 		if (!file_exists(TL_ROOT . '/system/cache/newsletter')) {
@@ -359,7 +396,7 @@ class NewsletterExtended extends \Newsletter {
     <td class="col_1">' . implode(', ', $arrAttachments) . '</td>
   </tr>' : '') . '
 </table>' . (!$objNewsletter->sendText ? '
-<iframe class="preview_html" id="preview_html" seamless border="0" width="703px" height="503px" style="padding:0" src="system/cache/newsletter/' . $objNewsletter->alias . '.html"></iframe>
+<iframe class="preview_html" id="preview_html" seamless border="0" width="703px" height="503px" style="padding:0" src="'.$iframeUrl.'"></iframe>
 ' : '') . '
 <div class="preview_text">
 ' . nl2br_html5($text) . '
