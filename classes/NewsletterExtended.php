@@ -150,7 +150,7 @@ class NewsletterExtended extends \Newsletter {
 		if (!$blnAttachmentsFormatError && \Input::get('token') != '' && \Input::get('token') == $this->Session->get('tl_newsletter_send')) {
 			$referer = preg_replace('/&(amp;)?(start|mpc|token|recipient|preview)=[^&]*/', '', \Environment::get('request'));
 
-			// Preview
+			// Preview ((=> send test ))
 			if (isset($_GET['preview'])) {
 				// Check the e-mail address
 				if (!\Validator::isEmail(\Input::get('recipient', true))) {
@@ -181,7 +181,22 @@ class NewsletterExtended extends \Newsletter {
 				// Send
 				$objEmail = $this->generateEmailObject($objNewsletter, $arrAttachments);
 				$objNewsletter->email = $strEmail;
-				$this->sendNewsletter($objEmail, $objNewsletter, $arrRecipient, $text, $html);
+                $replaceData = array (
+                    'firstname' => "Tom",
+                    'lastname' => "Tester",
+                    'street' => 'Teststreet 10',
+                    'postal' => '12345',
+                    'city' => 'Testcity',
+                    'phone' => '01234 56678',
+                    'email' => \Input::get('recipient'),
+                    'tracker_png' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=png',
+                    'tracker_gif' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=gif',
+                    'tracker_css' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=css',
+                    'tracker_js' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=js',
+                    'linkWebView' => self::getWebViewLink( $objNewsletter ),
+                );
+                $textContent = $this->parseSimpleTokens($text, $replaceData );
+				$this->sendNewsletter($objEmail, $objNewsletter, $arrRecipient, $textContent, $html);
 
 				// Redirect
 				\Message::addConfirmation(sprintf($GLOBALS['TL_LANG']['tl_newsletter']['confirm'], 1));
@@ -330,7 +345,8 @@ class NewsletterExtended extends \Newsletter {
 
 		$preview = $this->replaceInsertTags($preview);
 		//$preview = $this->prepareLinkTracking($preview, $objNewsletter->id, $this->User->email, '&preview=1');
-		$preview = $this->parseSimpleTokens($preview, array(
+
+        $simpleTokenData = array(
 			'firstname' => $arrName[0],
 			'lastname' => $arrName[sizeof($arrName)-1],
 			'street' => 'Königsbrücker Str. 9',
@@ -341,8 +357,12 @@ class NewsletterExtended extends \Newsletter {
 			'tracker_png' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=png',
 			'tracker_gif' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=gif',
 			'tracker_css' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=css',
-			'tracker_js' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=js'
-		));
+			'tracker_js' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=js',
+            'linkWebView' => self::getWebViewLink( $objNewsletter ),
+		);
+
+		$preview = $this->parseSimpleTokens($preview, $simpleTokenData );
+        $textContent = $this->parseSimpleTokens( $text, $simpleTokenData );
 
 
 
@@ -399,7 +419,7 @@ class NewsletterExtended extends \Newsletter {
 <iframe class="preview_html" id="preview_html" seamless border="0" width="703px" height="503px" style="padding:0" src="'.$iframeUrl.'"></iframe>
 ' : '') . '
 <div class="preview_text">
-' . nl2br_html5($text) . '
+' . nl2br_html5($textContent).'
 </div>
 
 <div class="tl_tbox">
@@ -527,8 +547,13 @@ class NewsletterExtended extends \Newsletter {
 	 */
 	protected function sendNewsletter(\Email $objEmail, \Database\Result $objNewsletter, $arrRecipient, $text, $body, $css=null)
 	{
+        $data = $arrRecipient;
+        $data['linkWebView'] = self::getWebViewLink( $objNewsletter );
+
+
+
 		// Prepare the text content
-		$text = \String::parseSimpleTokens($text, $arrRecipient);;
+		$text = \String::parseSimpleTokens($text, $data);;
 		// add piwik campaign links
 		$text = $this->addPiwikCampaignText ( $text, $objNewsletter->hoja_piwik_campaign );
 		
@@ -650,6 +675,41 @@ class NewsletterExtended extends \Newsletter {
 		return $result;
 	}
 	
-	
+
+    /**
+     * get the absolute weblink for the web view of the given newsletter
+     * @param $newsletter (either database result or NewsletterModel instance
+     * @return
+     */
+    public static function getWebViewLink ( $newsletter ) {
+        if ( is_a ( $newsletter, '\\Database\\Result' )) {
+            $temp = new \NewsletterModel ();
+            $temp->setRow ( $newsletter->row());
+            $newsletter = $temp;
+        }
+
+
+        if (($letterGroup = $newsletter->getRelated('pid')) === null)
+        {
+            return null;
+        }
+
+        if (intval($letterGroup->jumpTo) < 1) {
+            return null;
+        }
+
+        $jumpTo = $letterGroup->getRelated('jumpTo')->loadDetails();
+        if ( $jumpTo === null )
+            return null;
+
+        $baseAddress = \Controller::generateFrontendUrl($jumpTo->row(), ((\Config::get('useAutoItem') && !\Config::get('disableAlias')) ?  '/%s' : '/items/%s'));
+        $alias = ($newsletter->alias != '' && !\Config::get('disableAlias')) ? $newsletter->alias : $newsletter->id;
+
+        return \Environment::getInstance()->url . '/' . sprintf($baseAddress, $alias);
+    }
+
+
+
+
 
 }

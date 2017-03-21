@@ -78,37 +78,12 @@ class ContentNLHeader extends \Contao\ContentElement
 
         $newsletter = \NewsletterModel::findById ( $this->pid );
 
-        $this->Template->linkWebView = $this->_getWebViewLink ( $newsletter );
+        $this->Template->linkWebView = NewsletterExtended::getWebViewLink ( $newsletter );
         $this->Template->newsletter = $newsletter;
 	}
 
 
 
-    /**
-     * get the absolute weblink for the web view of the given newsletter
-     * @param \NewsletterModel $newsletter
-     * @return
-     */
-    protected function _getWebViewLink ( \NewsletterModel $newsletter ) {
-        if (($letterGroup = $newsletter->getRelated('pid')) === null)
-        {
-            return null;
-        }
-
-        if (intval($letterGroup->jumpTo) < 1) {
-            return null;
-        }
-
-        $jumpTo = $letterGroup->getRelated('jumpTo')->loadDetails();
-        if ( $jumpTo === null )
-            return null;
-
-        $baseAddress = $this->generateFrontendUrl($jumpTo->row(), ((\Config::get('useAutoItem') && !\Config::get('disableAlias')) ?  '/%s' : '/items/%s'));
-        $alias = ($newsletter->alias != '' && !\Config::get('disableAlias')) ? $newsletter->alias : $newsletter->id;
-
-        return $this->Environment->url . '/' . sprintf($baseAddress, $alias);
-    }
-	
 	
 
 	
