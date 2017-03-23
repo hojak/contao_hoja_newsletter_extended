@@ -51,17 +51,11 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['hoja_nl_content_template'] = array (
 );
 
 
-/**
- * hook to use the newsletter defined prefix for the template names 
- */
-$GLOBALS['TL_HOOKS']['parseTemplate'][] = array('tl_content_newsletter_extended', 'adaptTemplate');
-
-
 
 /**
  * Dynamically add the permission check and parent table
  */
-if ($this->Input->get('do') == 'newsletter' ) { 
+if (\Input::getInstance()->get('do') == 'newsletter' ) {
 	/*|| (\Input::get('table') == 'tl_content' && \Input::get('field') == 'type')) {*/
 	$GLOBALS['TL_DCA']['tl_content']['config']['ptable'] = 'tl_newsletter';
 	$GLOBALS['TL_DCA']['tl_content']['config']['onload_callback'][] = array('tl_content_newsletter_extended', 'checkPermission');
@@ -272,7 +266,7 @@ class tl_content_newsletter_extended extends Backend {
 	 *
 	 * @param $objTemplate the current template oject to render
 	 */
-	public function adaptTemplate($objTemplate)
+	public function adaptTemplate( $objTemplate )
 	{
 		// get the current prefix
 		if ( $objTemplate->ptable == "tl_newsletter" ) {

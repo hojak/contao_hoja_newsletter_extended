@@ -31,8 +31,11 @@ ClassLoader::addClasses(array
 	
 	// MOdules
 	'HoJa\NLExtended\ModuleNewsletterReader' => 'system/modules/hoja_newsletter_extended/modules/ModuleNewsletterReader.php',
-));
 
+
+
+    'tl_content_newsletter_extended' => 'system/modules/hoja_newsletter_extended/dca/tl_content.php',
+));
 
 /**
  * Register the templates

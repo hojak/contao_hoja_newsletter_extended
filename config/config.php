@@ -23,3 +23,10 @@ $GLOBALS['BE_MOD']['content']['newsletter']['send'] = array('HoJa\\NLExtended\\N
 $GLOBALS['TL_CTE']['hoja_newsletter']['hoja_nl_header'] = 'HoJa\\NLExtended\\ContentNLHeader';
 
 $GLOBALS['FE_MOD']['hoja_newsletter']['hoja_nl_reader'] = 'HoJa\\NLExtended\\ModuleNewsletterReader';
+
+
+
+/**
+ * hook to use the newsletter defined prefix for the template names
+ */
+$GLOBALS['TL_HOOKS']['parseTemplate'][] = array('tl_content_newsletter_extended', 'adaptTemplate');
