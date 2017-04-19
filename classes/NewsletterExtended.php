@@ -384,6 +384,7 @@ class NewsletterExtended extends \Newsletter {
 		file_put_contents(TL_ROOT . '/system/cache/newsletter/' . $objNewsletter->alias . '.html', preg_replace('/^\s+|\n|\r|\s+$/m', '', $preview));
 
 		// Preview newsletter
+        $this->loadLanguageFile('tl_newsletter_recipients');
 		$return = '
 <div id="tl_buttons">
 <a href="'.$this->getReferer(true).'" class="header_back" title="'.specialchars($GLOBALS['TL_LANG']['MSC']['backBTTitle']).'" accesskey="b">'.$GLOBALS['TL_LANG']['MSC']['backBT'].'</a>
@@ -423,6 +424,10 @@ class NewsletterExtended extends \Newsletter {
 </div>
 
 <div class="tl_tbox">
+
+<fieldset id="pal_send_legend" class="tl_box">
+<legend onclick="AjaxRequest.toggleFieldset(this,\'test_legend\',\'tl_content\')">Auslieferung</legend>
+
 <div class="w50">
   <h3><label for="ctrl_mpc">' . $GLOBALS['TL_LANG']['tl_newsletter']['mailsPerCycle'][0] . '</label></h3>
   <input type="text" name="mpc" id="ctrl_mpc" value="10" class="tl_text" onfocus="Backend.getScrollOffset()">' . (($GLOBALS['TL_LANG']['tl_newsletter']['mailsPerCycle'][1] && $GLOBALS['TL_CONFIG']['showHelp']) ? '
@@ -438,12 +443,60 @@ class NewsletterExtended extends \Newsletter {
   <input type="text" name="start" id="ctrl_start" value="0" class="tl_text" onfocus="Backend.getScrollOffset()">' . (($GLOBALS['TL_LANG']['tl_newsletter']['start'][1] && $GLOBALS['TL_CONFIG']['showHelp']) ? '
   <p class="tl_help tl_tip">' . $GLOBALS['TL_LANG']['tl_newsletter']['start'][1] . '</p>' : '') . '
 </div>
-<div class="w50">
+
+</fieldset>
+
+<fieldset id="pal_test_legend" class="tl_box">
+<legend onclick="AjaxRequest.toggleFieldset(this,\'test_legend\',\'tl_content\')">Testsendung</legend>
+
+
+<div class="w50 clr">
   <h3><label for="ctrl_recipient">' . $GLOBALS['TL_LANG']['tl_newsletter']['sendPreviewTo'][0] . '</label></h3>
   <input type="text" name="recipient" id="ctrl_recipient" value="'.$this->User->email.'" class="tl_text" onfocus="Backend.getScrollOffset()">' . (isset($_SESSION['TL_PREVIEW_MAIL_ERROR']) ? '
   <div class="tl_error">' . $GLOBALS['TL_LANG']['ERR']['email'] . '</div>' : (($GLOBALS['TL_LANG']['tl_newsletter']['sendPreviewTo'][1] && $GLOBALS['TL_CONFIG']['showHelp']) ? '
   <p class="tl_help tl_tip">' . $GLOBALS['TL_LANG']['tl_newsletter']['sendPreviewTo'][1] . '</p>' : '')) . '
 </div>
+
+
+<div class="clr">
+  <h3><label for="ctrl_form_of_address">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_form_of_address_label'][0] . '</label></h3>
+  <select name="hoja_nl_form_of_address" id="ctrl_hoja_nl_form_of_address" class="tl_select" onfocus="Backend.getScrollOffset()" style="opacity: 0;">
+   <option value="formal">'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_form_of_address_formal'].'</option>
+   <option value="informal">'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_form_of_address_informal'].'</option>
+  </select>'
+  . (($GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_form_of_address_label'][1] && $GLOBALS['TL_CONFIG']['showHelp']) ? '
+      <p class="tl_help tl_tip">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_form_of_address_label'][1] . '</p>' : '') . '
+</div>
+
+<div class="w50 clr">
+  <h3><label for="ctrl_gender">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_gender_label'][0] . '</label></h3>
+  <select name="hoja_nl_gender" id="ctrl_hoja_nl_gender" class="tl_select" onfocus="Backend.getScrollOffset()" style="opacity: 0;">
+   <option value="">-</option>
+   <option value="m">'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_gender_m'].'</option>
+   <option value="f">'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_gender_f'].'</option>
+  </select>'
+  . (($GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_gender_label'][1] && $GLOBALS['TL_CONFIG']['showHelp']) ? '
+      <p class="tl_help tl_tip">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_gender_label'][1] . '</p>' : '') . '
+</div>
+<div class="w50">
+  <h3><label for="ctrl_title">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_title'][0] . '</label></h3>
+  <input type="text" name="title" id="ctrl_title" value="" placeholder="'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_title'][0].'" class="tl_text" onfocus="Backend.getScrollOffset()">' . (($GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_title'][1] && $GLOBALS['TL_CONFIG']['showHelp']) ? '
+  <p class="tl_help tl_tip">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_title'][1] . '</p>' : '') . '
+</div>
+
+
+<div class="w50 clr">
+  <h3><label for="ctrl_firstname">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_firstname'][0] . '</label></h3>
+  <input type="text" name="firstname" id="ctrl_firstname" value="" placeholder="'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_firstname'][0].'" class="tl_text" onfocus="Backend.getScrollOffset()">' . (($GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_firstname'][1] && $GLOBALS['TL_CONFIG']['showHelp']) ? '
+  <p class="tl_help tl_tip">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_firstname'][1] . '</p>' : '') . '
+</div>
+<div class="w50">
+  <h3><label for="ctrl_lastname">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_lastname'][0] . '</label></h3>
+  <input type="text" name="lastname" id="ctrl_lastname" value="" placeholder="'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_lastname'][0].'" class="tl_text" onfocus="Backend.getScrollOffset()">' . (($GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_lastname'][1] && $GLOBALS['TL_CONFIG']['showHelp']) ? '
+  <p class="tl_help tl_tip">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_lastname'][1] . '</p>' : '') . '
+</div>
+</fieldset>
+
 <div class="clear"></div>
 </div>
 </div>';

@@ -34,7 +34,8 @@ array_insert($GLOBALS['TL_DCA']['tl_newsletter']['list']['operations'], 1, array
 
 $GLOBALS['TL_DCA']['tl_newsletter']['palettes']['default'] 	= str_replace(
 		';{html_legend},content;', 
-		';{hoja_files_legend},hoja_template_prefix,hoja_css_file;{hoja_tracking_legend},hoja_piwik_campaign;', 
+		'{hoja_files_legend},hoja_template_prefix,hoja_css_file;{hoja_tracking_legend},hoja_piwik_campaign;'
+        .'{hoja_salutation_legend},hoja_override_salutation,hoja_salutation_formal,hoja_salutation_informal;',
 		$GLOBALS['TL_DCA']['tl_newsletter']['palettes']['default']
 );
 
@@ -68,6 +69,33 @@ $GLOBALS['TL_DCA']['tl_newsletter']['fields']['hoja_rejected'] = array(
 $GLOBALS['TL_DCA']['tl_newsletter']['fields']['hoja_recipients'] = array(
 	'sql'                     => "int(10) unsigned NOT NULL default '0'"
 );
+
+$GLOBALS['TL_DCA']['tl_newsletter']['fields']['hoja_override_salutation'] = array(
+	'label'                   => &$GLOBALS['TL_LANG']['tl_newsletter']['hoja_override_salutation_label'],
+	'exclude'                 => true,
+	'inputType'               => 'select',
+    'options'                 => array (
+        'formal'      => &$GLOBALS['TL_LANG']['tl_newsletter']['hoja_override_salutation_formal'],
+        'informal'    => &$GLOBALS['TL_LANG']['tl_newsletter']['hoja_override_salutation_informal'],
+    ),
+	'eval'                    => array( 'includeBlankOption' => true, ),
+	'sql'                     => "varchar(10) NULL"
+);
+$GLOBALS['TL_DCA']['tl_newsletter']['fields']['hoja_salutation_informal'] = array(
+	'label'                   => &$GLOBALS['TL_LANG']['tl_newsletter']['hoja_salutation_informal'],
+	'exclude'                 => true,
+	'inputType'               => 'text',
+	'eval'                    => array(),
+	'sql'                     => "varchar(255) NULL"
+);
+$GLOBALS['TL_DCA']['tl_newsletter']['fields']['hoja_salutation_formal'] = array(
+	'label'                   => &$GLOBALS['TL_LANG']['tl_newsletter']['hoja_salutation_formal'],
+	'exclude'                 => true,
+	'inputType'               => 'text',
+	'eval'                    => array(),
+	'sql'                     => "varchar(255) NULL"
+);
+
 
 
 class tl_newsletter_extended extends tl_newsletter {

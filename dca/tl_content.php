@@ -83,7 +83,7 @@ if (\Input::getInstance()->get('do') == 'newsletter' ) {
 
 
 
-
+if ( ! class_exists( "tl_content_newsletter_extended")) {
 
 class tl_content_newsletter_extended extends Backend {
 
@@ -320,4 +320,7 @@ class tl_content_newsletter_extended extends Backend {
 	}
 
 	
+}
+
+
 }

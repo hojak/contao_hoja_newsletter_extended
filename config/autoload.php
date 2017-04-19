@@ -29,13 +29,14 @@ ClassLoader::addClasses(array
 	// Elements
 	'HoJa\NLExtended\ContentNLHeader'    => 'system/modules/hoja_newsletter_extended/elements/ContentNLHeader.php',
 	
-	// MOdules
-	'HoJa\NLExtended\ModuleNewsletterReader' => 'system/modules/hoja_newsletter_extended/modules/ModuleNewsletterReader.php',
-
+	// Modules
+	'HoJa\NLExtended\ModuleNewsletterReader'  => 'system/modules/hoja_newsletter_extended/modules/ModuleNewsletterReader.php',
+	'HoJa\NLExtended\ModuleUnsubscribeDouble' => 'system/modules/hoja_newsletter_extended/modules/ModuleUnsubscribeDouble.php',
 
 
     'tl_content_newsletter_extended' => 'system/modules/hoja_newsletter_extended/dca/tl_content.php',
 ));
+
 
 /**
  * Register the templates

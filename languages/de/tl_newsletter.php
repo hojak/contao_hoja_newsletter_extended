@@ -10,3 +10,14 @@ $GLOBALS['TL_LANG']['tl_newsletter']['hoja_tracking_legend'] = 'Empfänger-Verfo
 $GLOBALS['TL_LANG']['tl_newsletter']['hoja_files_legend'] = 'Datei-Einstellungen';
 
 $GLOBALS['TL_LANG']['tl_newsletter']['hoja_status_string'] = "Empfänger: %d, Zurückgewiesen: %d";
+
+
+$GLOBALS['TL_LANG']['tl_newsletter']['hoja_salutation_legend'] = '(HoJa NL) Anrede';
+$GLOBALS['TL_LANG']['tl_newsletter']['hoja_salutation_formal'] = array ('Anrede (formell)', 'Template für formelle Anrede (Sie), Platzhalter: ##firstname##, ##lastname##, ##title##, ##gender##');
+$GLOBALS['TL_LANG']['tl_newsletter']['hoja_salutation_informal'] = array ('Anrede (informell)', 'Template für informelle Anrede (Du), Platzhalter: ##firstname##, ##lastname##, ##title##, ##gender##');
+
+$GLOBALS['TL_LANG']['tl_newsletter']['hoja_override_salutation_label'] = array ('Anredeform (Sie/Du) überschreiben','Soll statt der ausgewählten Anredeform des Empfängers eine Form für diesen Letter erzwungen werden?');
+$GLOBALS['TL_LANG']['tl_newsletter']['hoja_override_salutation_formal'] = 'formell (Sie)';
+$GLOBALS['TL_LANG']['tl_newsletter']['hoja_override_salutation_informal'] = 'informell (Du)';
+
+
