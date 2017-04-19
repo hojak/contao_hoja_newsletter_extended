@@ -24,6 +24,8 @@ $GLOBALS['TL_CTE']['hoja_newsletter']['hoja_nl_header'] = 'HoJa\\NLExtended\\Con
 
 $GLOBALS['FE_MOD']['hoja_newsletter']['hoja_nl_reader'] = 'HoJa\\NLExtended\\ModuleNewsletterReader';
 
+$GLOBALS['FE_MOD']['hoja_newsletter']['hoja_nl_unsubscribe_double'] = 'HoJa\\NLExtended\\ModuleUnsubscribeDouble';
+
 
 
 /**
