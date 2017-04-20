@@ -763,6 +763,17 @@ class NewsletterExtended extends \Newsletter {
 
 
 
+    /**
+     * get the correct salutation for the given recipient
+     * @param <unknown> $newsletter
+     * @param <unknown> $recipient
+     * @return
+     */
+    public static function getSalutation ( $recipient ) {
+        // TODO
+        return "Hi,";
+    }
+
 
 
 }

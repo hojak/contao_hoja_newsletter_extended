@@ -43,6 +43,8 @@ ClassLoader::addClasses(array
  */
 TemplateLoader::addFiles(array
 (
-	'ce_hoja_nl_header' => 'system/modules/hoja_newsletter_extended/templates',
-	'mod_hoja_newsletter_reader' => 'system/modules/hoja_newsletter_extended/templates',
+	'ce_hoja_nl_header'           => 'system/modules/hoja_newsletter_extended/templates',
+
+	'mod_hoja_newsletter_reader'  => 'system/modules/hoja_newsletter_extended/templates',
+	'mod_hoja_unsubscribe_double' => 'system/modules/hoja_newsletter_extended/templates',
 ));

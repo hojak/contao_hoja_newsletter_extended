@@ -1,0 +1,28 @@
+<?php $this->extend('block_unsearchable'); ?>
+
+<?php $this->block('content'); ?>
+
+    <?php if ( $this->comfirm_unsubscription ): ?>
+    <p class="<?= $this->mclass ?>"><?= $this->message ?></p>
+    <?php else: ?>
+
+  <form<?php if ($this->action): ?> action="<?= $this->action ?>"<?php endif; ?> id="<?= $this->formId ?>" method="post">
+    <div class="formbody">
+      <input type="hidden" name="FORM_SUBMIT" value="<?= $this->formId ?>">
+      <input type="hidden" name="REQUEST_TOKEN" value="{{request_token}}">
+
+      <?php if ($this->message): ?>
+        <p class="<?= $this->mclass ?>"><?= $this->message ?></p>
+      <?php endif; ?>
+
+      <label for="ctrl_email_<?= $this->id ?>" class="invisible"><?= $this->emailLabel ?></label>
+      <input type="text" name="email" id="ctrl_email_<?= $this->id ?>" class="text" value="<?= $this->email ?>" placeholder="<?= $this->emailLabel ?>">
+
+      <input type="submit" name="submit" class="submit" value="<?= $this->submit ?>">
+
+    </div>
+  </form>
+
+  <?php endif; ?>
+
+<?php $this->endblock(); ?>
