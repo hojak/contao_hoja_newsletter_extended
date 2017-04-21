@@ -146,9 +146,14 @@ class NewsletterExtended extends \Newsletter {
 		// Set back to object
 		$objNewsletter->content = $html;
 
+
+
+        // actualize preview data
+        $this->_initPreviewData();
+
 		// Send newsletter
 		if (!$blnAttachmentsFormatError && \Input::get('token') != '' && \Input::get('token') == $this->Session->get('tl_newsletter_send')) {
-			$referer = preg_replace('/&(amp;)?(start|mpc|token|recipient|preview)=[^&]*/', '', \Environment::get('request'));
+			$referer = preg_replace('/&(amp;)?(start|mpc|token|recipient|preview|actualize)=[^&]*/', '', \Environment::get('request'));
 
 			// Preview ((=> send test ))
 			if (isset($_GET['preview'])) {
@@ -166,7 +171,10 @@ class NewsletterExtended extends \Newsletter {
 											   ->execute($strEmail);
 
 				if ($objRecipient->num_rows < 1) {
-					$arrRecipient['email'] = $strEmail;
+					$arrRecipient = array (
+                        'email' => $strEmail,
+                        'pio'   => $objNewsletter->pid,
+                    );
 				} else {
 					$arrRecipient = $objRecipient->row();
 				}
@@ -175,31 +183,35 @@ class NewsletterExtended extends \Newsletter {
 					'tracker_png' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $strEmail . '&preview=1&t=png',
 					'tracker_gif' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $strEmail . '&preview=1&t=gif',
 					'tracker_css' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $strEmail . '&preview=1&t=css',
-					'tracker_js' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $strEmail . '&preview=1&t=js'
+					'tracker_js'  => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $strEmail . '&preview=1&t=js'
 				));
 
 				// Send
 				$objEmail = $this->generateEmailObject($objNewsletter, $arrAttachments);
 				$objNewsletter->email = $strEmail;
                 $replaceData = array (
-                    'firstname' => "Tom",
-                    'lastname' => "Tester",
-                    'street' => 'Teststreet 10',
-                    'postal' => '12345',
-                    'city' => 'Testcity',
-                    'phone' => '01234 56678',
-                    'email' => \Input::get('recipient'),
+                    'hoja_nl_title' => $_SESSION['hoja_preview_title'],
+                    'hoja_nl_gender' => $_SESSION['hoja_preview_gender'],
+                    'hoja_nl_form_of_address' => \Input::get('form_of_address'),
+                    'hoja_nl_firstname' => \Input::get('firstname'),
+                    'hoja_nl_lastname' => \Input::get('lastname'),
+                    'email' => $strEmail,
                     'tracker_png' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=png',
                     'tracker_gif' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=gif',
                     'tracker_css' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=css',
                     'tracker_js' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=js',
                     'linkWebView' => self::getWebViewLink( $objNewsletter ),
+                    'pid' => $objNewsletter->pid,
                 );
+                $replaceData['salutation'] = self::getSalutation( $replaceData );
                 $textContent = $this->parseSimpleTokens($text, $replaceData );
 				$this->sendNewsletter($objEmail, $objNewsletter, $arrRecipient, $textContent, $html);
 
 				// Redirect
 				\Message::addConfirmation(sprintf($GLOBALS['TL_LANG']['tl_newsletter']['confirm'], 1));
+
+
+                // abort sending due to preview...
 				$this->redirect($referer);
 			}
 
@@ -335,36 +347,26 @@ class NewsletterExtended extends \Newsletter {
 			$preview = $this->addPiwikCampaignHtml ( $preview, $objNewsletter->hoja_piwik_campaign );
 		}
 
-		// Replace inserttags
-		$arrName = explode(' ', $this->User->name);
-
         $iframeUrl = 'system/cache/newsletter/' . $objNewsletter->alias . '.html';
 
         // get rid of base <> #-link problem
         $preview = preg_replace( '/href="#/', 'href="'.$this->Environment->url. "/".$iframeUrl.'#', $preview );
 
-		$preview = $this->replaceInsertTags($preview);
-		//$preview = $this->prepareLinkTracking($preview, $objNewsletter->id, $this->User->email, '&preview=1');
+        $preview = $this->replaceInsertTags($preview);
+        //$preview = $this->prepareLinkTracking($preview, $objNewsletter->id, $this->User->email, '&preview=1');
 
-        $simpleTokenData = array(
-			'firstname' => $arrName[0],
-			'lastname' => $arrName[sizeof($arrName)-1],
-			'street' => 'Königsbrücker Str. 9',
-			'postal' => '01099',
-			'city' => 'Dresden',
-			'phone' => '0351 30966184',
-			'email' => $this->User->email,
-			'tracker_png' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=png',
-			'tracker_gif' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=gif',
-			'tracker_css' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=css',
-			'tracker_js' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=js',
+        $simpleTokenData = array_merge ( $_SESSION['hoja_preview'], array (
+            'tracker_png' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=png',
+            'tracker_gif' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=gif',
+            'tracker_css' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=css',
+            'tracker_js'  => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=js',
             'linkWebView' => self::getWebViewLink( $objNewsletter ),
-		);
+            'pid'         => $objNewsletter->pid,
+        ));
+        $simpleTokenData['salutation'] = self::getSalutation( $simpleTokenData );
 
-		$preview = $this->parseSimpleTokens($preview, $simpleTokenData );
+        $preview = $this->parseSimpleTokens($preview, $simpleTokenData );
         $textContent = $this->parseSimpleTokens( $text, $simpleTokenData );
-
-
 
 
 		// Create cache folder
@@ -452,7 +454,7 @@ class NewsletterExtended extends \Newsletter {
 
 <div class="w50 clr">
   <h3><label for="ctrl_recipient">' . $GLOBALS['TL_LANG']['tl_newsletter']['sendPreviewTo'][0] . '</label></h3>
-  <input type="text" name="recipient" id="ctrl_recipient" value="'.$this->User->email.'" class="tl_text" onfocus="Backend.getScrollOffset()">' . (isset($_SESSION['TL_PREVIEW_MAIL_ERROR']) ? '
+  <input type="text" name="recipient" id="ctrl_recipient" value="'.$simpleTokenData['email'].'" class="tl_text" onfocus="Backend.getScrollOffset()">' . (isset($_SESSION['TL_PREVIEW_MAIL_ERROR']) ? '
   <div class="tl_error">' . $GLOBALS['TL_LANG']['ERR']['email'] . '</div>' : (($GLOBALS['TL_LANG']['tl_newsletter']['sendPreviewTo'][1] && $GLOBALS['TL_CONFIG']['showHelp']) ? '
   <p class="tl_help tl_tip">' . $GLOBALS['TL_LANG']['tl_newsletter']['sendPreviewTo'][1] . '</p>' : '')) . '
 </div>
@@ -460,9 +462,9 @@ class NewsletterExtended extends \Newsletter {
 
 <div class="clr">
   <h3><label for="ctrl_form_of_address">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_form_of_address_label'][0] . '</label></h3>
-  <select name="hoja_nl_form_of_address" id="ctrl_hoja_nl_form_of_address" class="tl_select" onfocus="Backend.getScrollOffset()" style="opacity: 0;">
-   <option value="formal">'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_form_of_address_formal'].'</option>
-   <option value="informal">'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_form_of_address_informal'].'</option>
+  <select name="form_of_address" id="ctrl_hoja_nl_form_of_address" class="tl_select" onfocus="Backend.getScrollOffset()" style="opacity: 0;">
+   <option value="formal"'.($simpleTokenData['hoja_nl_form_of_address']=='formal' ? ' selected="selected"' : '').'>'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_form_of_address_formal'].'</option>
+   <option value="informal"'.($simpleTokenData['hoja_nl_form_of_address']=='informal' ? ' selected="selected"' : '').'>'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_form_of_address_informal'].'</option>
   </select>'
   . (($GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_form_of_address_label'][1] && $GLOBALS['TL_CONFIG']['showHelp']) ? '
       <p class="tl_help tl_tip">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_form_of_address_label'][1] . '</p>' : '') . '
@@ -470,29 +472,29 @@ class NewsletterExtended extends \Newsletter {
 
 <div class="w50 clr">
   <h3><label for="ctrl_gender">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_gender_label'][0] . '</label></h3>
-  <select name="hoja_nl_gender" id="ctrl_hoja_nl_gender" class="tl_select" onfocus="Backend.getScrollOffset()" style="opacity: 0;">
+  <select name="gender" id="ctrl_hoja_nl_gender" class="tl_select" onfocus="Backend.getScrollOffset()" style="opacity: 0;">
    <option value="">-</option>
-   <option value="m">'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_gender_m'].'</option>
-   <option value="f">'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_gender_f'].'</option>
+   <option value="m"'.($simpleTokenData['hoja_nl_gender']=='m' ? ' selected="selected"' : '').'>'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_gender_m'].'</option>
+   <option value="f"'.($simpleTokenData['hoja_nl_gender']=='f' ? ' selected="selected"' : '').'>'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_gender_f'].'</option>
   </select>'
   . (($GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_gender_label'][1] && $GLOBALS['TL_CONFIG']['showHelp']) ? '
       <p class="tl_help tl_tip">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_gender_label'][1] . '</p>' : '') . '
 </div>
 <div class="w50">
   <h3><label for="ctrl_title">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_title'][0] . '</label></h3>
-  <input type="text" name="title" id="ctrl_title" value="" placeholder="'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_title'][0].'" class="tl_text" onfocus="Backend.getScrollOffset()">' . (($GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_title'][1] && $GLOBALS['TL_CONFIG']['showHelp']) ? '
+  <input type="text" name="title" id="ctrl_title" value="'.$simpleTokenData['hoja_nl_title'].'" placeholder="'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_title'][0].'" class="tl_text" onfocus="Backend.getScrollOffset()">' . (($GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_title'][1] && $GLOBALS['TL_CONFIG']['showHelp']) ? '
   <p class="tl_help tl_tip">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_title'][1] . '</p>' : '') . '
 </div>
 
 
 <div class="w50 clr">
   <h3><label for="ctrl_firstname">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_firstname'][0] . '</label></h3>
-  <input type="text" name="firstname" id="ctrl_firstname" value="" placeholder="'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_firstname'][0].'" class="tl_text" onfocus="Backend.getScrollOffset()">' . (($GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_firstname'][1] && $GLOBALS['TL_CONFIG']['showHelp']) ? '
+  <input type="text" name="firstname" id="ctrl_firstname" value="'.$simpleTokenData['hoja_nl_firstname'].'" placeholder="'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_firstname'][0].'" class="tl_text" onfocus="Backend.getScrollOffset()">' . (($GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_firstname'][1] && $GLOBALS['TL_CONFIG']['showHelp']) ? '
   <p class="tl_help tl_tip">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_firstname'][1] . '</p>' : '') . '
 </div>
 <div class="w50">
   <h3><label for="ctrl_lastname">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_lastname'][0] . '</label></h3>
-  <input type="text" name="lastname" id="ctrl_lastname" value="" placeholder="'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_lastname'][0].'" class="tl_text" onfocus="Backend.getScrollOffset()">' . (($GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_lastname'][1] && $GLOBALS['TL_CONFIG']['showHelp']) ? '
+  <input type="text" name="lastname" id="ctrl_lastname" value="'.$simpleTokenData['hoja_nl_lastname'].'" placeholder="'.$GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_lastname'][0].'" class="tl_text" onfocus="Backend.getScrollOffset()">' . (($GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_lastname'][1] && $GLOBALS['TL_CONFIG']['showHelp']) ? '
   <p class="tl_help tl_tip">' . $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_lastname'][1] . '</p>' : '') . '
 </div>
 </fieldset>
@@ -507,6 +509,7 @@ class NewsletterExtended extends \Newsletter {
 
 <div class="tl_formbody_submit">
 <div class="tl_submit_container">
+<input type="submit" name="actualize" class="tl_submit" accesskey="p" value="'.specialchars($GLOBALS['TL_LANG']['tl_newsletter']['actualize_preview']).'">
 <input type="submit" name="preview" class="tl_submit" accesskey="p" value="'.specialchars($GLOBALS['TL_LANG']['tl_newsletter']['preview']).'">
 <input type="submit" id="send" class="tl_submit" accesskey="s" value="'.specialchars($GLOBALS['TL_LANG']['tl_newsletter']['send'][0]).'" onclick="return confirm(\''. str_replace("'", "\\'", $GLOBALS['TL_LANG']['tl_newsletter']['sendConfirm']) .'\')">
 </div>
@@ -602,6 +605,7 @@ class NewsletterExtended extends \Newsletter {
 	{
         $data = $arrRecipient;
         $data['linkWebView'] = self::getWebViewLink( $objNewsletter );
+        $data['salutation'] = self::getSalutation( $arrRecipient );
 
 
 
@@ -638,7 +642,7 @@ class NewsletterExtended extends \Newsletter {
 			$html = $this->convertRelativeUrls($html);
 			$html = $this->replaceInsertTags($html);
 			// $html = $this->prepareLinkTracking($html, $objNewsletter->id, $arrRecipient['email'], $arrRecipient['extra'] ?: '');
-			$html = $this->parseSimpleTokens($html, $arrRecipient);
+			$html = $this->parseSimpleTokens($html, $data );
 			
 			// add piwik campaign links
 			$html = $this->addPiwikCampaignHtml ( $html, $objNewsletter->hoja_piwik_campaign );
@@ -770,10 +774,69 @@ class NewsletterExtended extends \Newsletter {
      * @return
      */
     public static function getSalutation ( $recipient ) {
-        // TODO
-        return "Hi,";
+        if ( is_object($recipient))
+            $recipient = $recipient->row();
+
+        $result = "";
+        \System::loadLanguageFile ( "tl_newsletter_recipients");
+
+        $channel = \NewsletterChannelModel::findById ( $recipient['pid']);
+        $overrideForm = $channel->hoja_override_salutation;
+
+        $data = array (
+            "gender"    => $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_gender_' . $recipient['hoja_nl_gender'] ],
+            "firstname" => $recipient['hoja_nl_firstname'],
+            "lastname"  => $recipient['hoja_nl_lastname'],
+            "title"     => $recipient['hoja_nl_title'],
+        );
+        $template = "";
+        if ( ($recipient['hoja_nl_form_of_address'] == "informal" || $overrideForm == "informal") && $overrideForm  != "formal" ) {
+            if ( $recipient['hoja_nl_firstname'] ) {
+                $template = $channel->hoja_salutation_informal;
+            }
+        } else if ( $recipient['hoja_nl_form_of_address'] == "formal" || $overrideForm == "formal" ) {
+            if ( $recipient['hoja_nl_gender'] && $recipient['hoja_nl_lastname'] ) {
+                $template = $channel->hoja_salutation_formal;
+            }
+        }
+
+        if ( $template ) {
+            $result = \Controller::parseSimpleTokens( $template, $data );
+            $result = preg_replace( "# +#", " ", $result);
+        } else {
+            $result = $channel->hoja_salutation_default;
+        }
+
+        return $result;
     }
 
+
+    protected function _initPreviewData () {
+        if ( \Input::get('actualize')) {
+            $_SESSION['hoja_preview'] = array (
+                'email' => \Input::get('recipient'),
+                'hoja_nl_title' => \Input::get('title'),
+                'hoja_nl_firstname' => \Input::get('firstname'),
+                'hoja_nl_lastname' => \Input::get('lastname'),
+                'hoja_nl_gender' => \Input::get('gender'),
+                'hoja_nl_form_of_address' => \Input::get('form_of_address'),
+            );
+
+			$referer = preg_replace('/&(amp;)?(start|mpc|token|recipient|preview|actualize)=[^&]*/', '', \Environment::get('request'));
+            // abort (to not send the letter)
+            $this->redirect ( $referer );
+        } elseif ( ! $_SESSION['hoja_preview']) {
+            $arrName = explode(' ', $this->User->name);
+            $_SESSION['hoja_preview'] = array (
+                'hoja_nl_firstname' => $arrName[0],
+                'hoja_nl_lastname' => $arrName[sizeof($arrName)-1],
+                'hoja_nl_form_of_address' => 'formal',
+                'hoja_nl_gender' => null,
+                'hoja_nl_title' => null,
+                'email' => $this->User->email,
+            );
+        }
+    }
 
 
 }
