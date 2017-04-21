@@ -151,73 +151,54 @@ class NewsletterExtended extends \Newsletter {
         // actualize preview data
         $this->_initPreviewData();
 
-		// Send newsletter
-		if (!$blnAttachmentsFormatError && \Input::get('token') != '' && \Input::get('token') == $this->Session->get('tl_newsletter_send')) {
-			$referer = preg_replace('/&(amp;)?(start|mpc|token|recipient|preview|actualize)=[^&]*/', '', \Environment::get('request'));
+        // Send newsletter
+        if (!$blnAttachmentsFormatError && \Input::get('token') != '' && \Input::get('token') == $this->Session->get('tl_newsletter_send')) {
+            $referer = preg_replace('/&(amp;)?(start|mpc|token|recipient|preview|actualize)=[^&]*/', '', \Environment::get('request'));
 
-			// Preview ((=> send test ))
-			if (isset($_GET['preview'])) {
-				// Check the e-mail address
-				if (!\Validator::isEmail(\Input::get('recipient', true))) {
-					$_SESSION['TL_PREVIEW_MAIL_ERROR'] = true;
-					$this->redirect($referer);
-				}
+            // Preview ((=> send test ))
+            if (isset($_GET['preview'])) {
+                // get preview recipient
+                if (!\Validator::isEmail(\Input::get('recipient', true))) {
+                    $_SESSION['TL_PREVIEW_MAIL_ERROR'] = true;
+                    $this->redirect($referer);
+                }
 
-				// get preview recipient
-				$arrRecipient = array();
-				$strEmail = urldecode(\Input::get('recipient', true));
-				$objRecipient = $this->Database->prepare("SELECT * FROM tl_member m WHERE email=? ORDER BY email")
-											   ->limit(1)
-											   ->execute($strEmail);
+                $strEmail = \Input::get('recipient');
+                $arrRecipient = array_merge($_SESSION['hoja_preview'], array(
+                    'extra' => '&preview=1',
+                    'tracker_png' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $strEmail . '&preview=1&t=png',
+                    'tracker_gif' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $strEmail . '&preview=1&t=gif',
+                    'tracker_css' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $strEmail . '&preview=1&t=css',
+                    'tracker_js'  => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $strEmail . '&preview=1&t=js',
+                    'pid'   => $objNewsletter->pid,
+                ));
 
-				if ($objRecipient->num_rows < 1) {
-					$arrRecipient = array (
-                        'email' => $strEmail,
-                        'pio'   => $objNewsletter->pid,
-                    );
-				} else {
-					$arrRecipient = $objRecipient->row();
-				}
-				$arrRecipient = array_merge($arrRecipient, array(
-					'extra' => '&preview=1',
-					'tracker_png' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $strEmail . '&preview=1&t=png',
-					'tracker_gif' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $strEmail . '&preview=1&t=gif',
-					'tracker_css' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $strEmail . '&preview=1&t=css',
-					'tracker_js'  => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $strEmail . '&preview=1&t=js'
-				));
-
-				// Send
-				$objEmail = $this->generateEmailObject($objNewsletter, $arrAttachments);
-				$objNewsletter->email = $strEmail;
-                $replaceData = array (
-                    'hoja_nl_title' => $_SESSION['hoja_preview_title'],
-                    'hoja_nl_gender' => $_SESSION['hoja_preview_gender'],
-                    'hoja_nl_form_of_address' => \Input::get('form_of_address'),
-                    'hoja_nl_firstname' => \Input::get('firstname'),
-                    'hoja_nl_lastname' => \Input::get('lastname'),
-                    'email' => $strEmail,
+                // Send
+                $objEmail = $this->generateEmailObject($objNewsletter, $arrAttachments);
+                $objNewsletter->email = $strEmail;
+                $replaceData = array_merge( $_SESSION['hoja_preview'], array (
                     'tracker_png' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=png',
                     'tracker_gif' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=gif',
                     'tracker_css' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=css',
                     'tracker_js' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=js',
                     'linkWebView' => self::getWebViewLink( $objNewsletter ),
                     'pid' => $objNewsletter->pid,
-                );
+                ));
                 $replaceData['salutation'] = self::getSalutation( $replaceData );
                 $textContent = $this->parseSimpleTokens($text, $replaceData );
-				$this->sendNewsletter($objEmail, $objNewsletter, $arrRecipient, $textContent, $html);
+                $this->sendNewsletter($objEmail, $objNewsletter, $arrRecipient, $textContent, $html);
 
-				// Redirect
-				\Message::addConfirmation(sprintf($GLOBALS['TL_LANG']['tl_newsletter']['confirm'], 1));
+                // Redirect
+                \Message::addConfirmation(sprintf($GLOBALS['TL_LANG']['tl_newsletter']['confirm'], 1));
 
 
                 // abort sending due to preview...
-				$this->redirect($referer);
-			}
+                $this->redirect($referer);
+            }
 
-			// Get the total number of recipients
-			$objTotal = $this->Database->prepare("SELECT COUNT(DISTINCT email) AS count FROM tl_newsletter_recipients WHERE pid=? AND active=1")
-									   ->execute($objNewsletter->pid);
+            // Get the total number of recipients
+            $objTotal = $this->Database->prepare("SELECT COUNT(DISTINCT email) AS count FROM tl_newsletter_recipients WHERE pid=? AND active=1")
+                                       ->execute($objNewsletter->pid);
 
 			// Return if there are no recipients
 			if ($objTotal->count < 1) {
