@@ -13,7 +13,7 @@ class ModuleUnsubscribeDouble extends \Module
 
     protected static $formId = 'hoja_unsubscribe_double';
 
-    protected static $tokenVar = 'tunsub';
+    public static $tokenVar = 'tunsub';
 
 
     public function generate()
@@ -126,25 +126,8 @@ class ModuleUnsubscribeDouble extends \Module
 
         if (($subscriptions = \NewsletterRecipientsModel::findBy(array("email=? AND active=1"), $email)) !== null) {
             // unify tokens
-            $token = null;
-            foreach ( $subscriptions as $subscription ) {
-                if ( $subscription->hoja_nl_unsubscribe_id && ! $token )
-                    $token = $subscription->hoja_nl_unsubscribe_id;
-            }
+            self::ensureUnsubscrioptionId ( $subscription );
 
-            if ( ! $token ) {
-                do {
-                    $token = md5(uniqid(mt_rand(), true));
-                } while ( \NewsletterRecipientsModel::findBy ( array ("hoja_nl_unsubscribe_id=?"), $token ));
-            }
-
-            foreach ( $subscriptions as $subscription ) {
-                if ( $subscription->hoja_nl_unsubscribe_id != $token ) {
-                    $subscription->hoja_nl_unsubscribe_id = $token;
-                }
-                $subscription->hoja_nl_unsubscribed_pending = time();
-                $subscription->save();
-            }
             $subscriptions->first();
 
             $parseData = array(
@@ -171,6 +154,30 @@ class ModuleUnsubscribeDouble extends \Module
         } else {
             $_SESSION['UNSUBSCRIBE_MAIL_SENT'] = $GLOBALS['TL_LANG']['tl_module']['hoja_nl_unsubscribe_mail_sent'];
             $this->reload();
+        }
+    }
+
+
+    public static function ensureUnsubscriptionId ( $subscriptions ) {
+
+        $token = null;
+        foreach ( $subscriptions as $subscription ) {
+            if ( $subscription->hoja_nl_unsubscribe_id && ! $token )
+                $token = $subscription->hoja_nl_unsubscribe_id;
+        }
+
+        if ( ! $token ) {
+            do {
+                $token = md5(uniqid(mt_rand(), true));
+            } while ( \NewsletterRecipientsModel::findBy ( array ("hoja_nl_unsubscribe_id=?"), $token ));
+        }
+
+        foreach ( $subscriptions as $subscription ) {
+            if ( $subscription->hoja_nl_unsubscribe_id != $token ) {
+                $subscription->hoja_nl_unsubscribe_id = $token;
+            }
+            $subscription->hoja_nl_unsubscribed_pending = time();
+            $subscription->save();
         }
     }
 

@@ -4,6 +4,12 @@
 $GLOBALS['TL_DCA']['tl_newsletter_channel']['palettes']['default'] .=
         ';{hoja_salutation_legend},hoja_override_salutation,hoja_salutation_default,hoja_salutation_formal,hoja_salutation_informal';
 
+$GLOBALS['TL_DCA']['tl_newsletter_channel']['palettes']['default'] 	= str_replace(
+    "jumpTo;",
+    "jumpTo,hoja_unsubscribe_page;",
+    $GLOBALS['TL_DCA']['tl_newsletter_channel']['palettes']['default']
+);
+
 
 $GLOBALS['TL_DCA']['tl_newsletter_channel']['fields']['hoja_override_salutation'] = array(
 	'label'                   => &$GLOBALS['TL_LANG']['tl_newsletter_channel']['hoja_override_salutation_label'],
@@ -46,6 +52,17 @@ $GLOBALS['TL_DCA']['tl_newsletter_channel']['fields']['hoja_salutation_default']
     'load_callback' => array (
         array('tl_newsletter_channel_extended', 'getDefaultSalutation')
     ),
+);
+
+
+$GLOBALS['TL_DCA']['tl_newsletter_channel']['fields']['hoja_unsubscribe_page'] = array(
+    'label'                   => &$GLOBALS['TL_LANG']['tl_newsletter_channel']['hoja_unsubscribe_page'],
+    'exclude'                 => true,
+    'inputType'               => 'pageTree',
+    'foreignKey'              => 'tl_page.title',
+    'eval'                    => array('fieldType'=>'radio'),
+    'sql'                     => "int(10) unsigned NULL",
+    'relation'                => array('type'=>'hasOne', 'load'=>'lazy')
 );
 
 

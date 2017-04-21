@@ -183,6 +183,7 @@ class NewsletterExtended extends \Newsletter {
                     'tracker_js' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=js',
                     'linkWebView' => self::getWebViewLink( $objNewsletter ),
                     'pid' => $objNewsletter->pid,
+                    'unsubscribe' => 'about:blank',
                 ));
                 $replaceData['salutation'] = self::getSalutation( $replaceData );
                 $textContent = $this->parseSimpleTokens($text, $replaceData );
@@ -245,7 +246,8 @@ class NewsletterExtended extends \Newsletter {
 						'tracker_png' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $objRecipients->email . '&t=png',
 						'tracker_gif' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $objRecipients->email . '&t=gif',
 						'tracker_css' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $objRecipients->email . '&t=css',
-						'tracker_js' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $objRecipients->email . '&t=js'
+						'tracker_js' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $objRecipients->email . '&t=js',
+                        'unsubscribe' => $this->getUnsubscriptionLink( $objRecipients ),
 					));
 					$this->sendNewsletter($objEmail, $objNewsletter, $arrRecipient, $text, $html);
 
@@ -343,6 +345,7 @@ class NewsletterExtended extends \Newsletter {
             'tracker_js'  => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=js',
             'linkWebView' => self::getWebViewLink( $objNewsletter ),
             'pid'         => $objNewsletter->pid,
+            'unsubscribe' => 'about::blank',
         ));
         $simpleTokenData['salutation'] = self::getSalutation( $simpleTokenData );
 
@@ -589,7 +592,6 @@ class NewsletterExtended extends \Newsletter {
         $data['salutation'] = self::getSalutation( $arrRecipient );
 
 
-
 		// Prepare the text content
 		$text = \String::parseSimpleTokens($text, $data);;
 		// add piwik campaign links
@@ -817,6 +819,25 @@ class NewsletterExtended extends \Newsletter {
                 'email' => $this->User->email,
             );
         }
+    }
+
+
+    protected function getUnsubscriptionLink ( $recipient ) {
+        if ( ! $recipient->hoja_nl_unsubscibe_id ) {
+            \HoJa\NLExtended\ModuleUnsubscribeDouble::ensureUnsubscriptionId( \NewsletterRecipientsModel::findById ( $recipient->id ));
+        }
+
+        $channel = \NewsletterChannelModel::findById ( $recipient->pid );
+
+        $page = $channel->getRelated('hoja_unsubscribe_page')->loadDetails();
+        if ( $page === null )
+            return null;
+
+        $baseAddress = \Controller::generateFrontendUrl($page->row(), ((\Config::get('useAutoItem') && !\Config::get('disableAlias')) ?  '/%s' : '/items/%s'));
+
+        $url = \Environment::getInstance()->url . '/' . sprintf($baseAddress, $alias);
+        $bind = (strpos($url, "?") === null) ? '?' : '&';
+        return $url . $bind . \HoJa\NLExtended\ModuleUnsubscribeDouble::$tokenVar . "=" . $recipient->hoja_nl_unsubscribe_id;
     }
 
 
