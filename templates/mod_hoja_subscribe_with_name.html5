@@ -1,0 +1,124 @@
+<?php $this->extend('block_unsearchable'); ?>
+
+<?php $this->block('content'); ?>
+
+    <?php if ( $this->confirmed ): ?>
+      <?php if ($this->message): ?>
+        <p class="<?= $this->mclass ?>"><?= $this->message ?></p>
+      <?php endif; ?>
+
+    <?php else: ?>
+
+
+  <form<?php if ($this->action): ?> action="<?= $this->action ?>"<?php endif; ?> id="<?= $this->formId ?>" method="post" class="ym-form">
+    <div class="formbody">
+      <input type="hidden" name="FORM_SUBMIT" value="<?= $this->formId ?>">
+      <input type="hidden" name="REQUEST_TOKEN" value="{{request_token}}">
+
+      <?php if ($this->message): ?>
+        <p class="<?= $this->mclass ?>"><?= $this->message ?></p>
+      <?php endif; ?>
+
+      <?php if (!$this->showChannels): ?>
+        <?php foreach ($this->channels as $id=>$title): ?>
+          <input type="hidden" name="channels[]" value="<?= $id ?>">
+        <?php endforeach; ?>
+      <?php endif; ?>
+
+
+      <fieldset>
+        <legend>Name und Anrede (optional)</legend>
+
+    <div class="ym-fbox-wrap ym-grid">
+
+        <div class="ym-g20 ym-gl" style="margin-right: 27px;">
+
+            <div class="widget widget-text ym-fbox-select">
+              <label for="ctrl_form_of_address_<?= $this->id ?>"><?= $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_form_of_address_label'][0] ?></label>
+              <select style="width: 100%"  name="form_of_address" id="ctrl_form_of_address_<?= $this->id?>">
+                <option value="">&ndash;</option>
+                <option value="informal" <?= ($this->form_of_address == "informal") ? 'checked="checked"' : "" ?>><?= $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_form_of_address_informal'] ?></option>
+                <option value="formal" <?= ($this->form_of_address == "formal") ? 'checked="checked"' : "" ?>><?= $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_form_of_address_formal'] ?></option>
+              </select>
+            </div>
+        </div>
+
+        <div class="ym-g20 ym-gl" style="margin-right: 27px;">
+            <div class="widget widget-text ym-fbox-select">
+              <label for="ctrl_gender_<?= $this->id ?>"><?= $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_gender_label'][0] ?></label>
+              <select name="gender" id="ctrl_gender_<?= $this->id?>" style="width: 100%;">
+                <option value="">&ndash;</option>
+                <option value="m" <?= ($this->gender == "m") ? 'checked="checked"' : "" ?>><?= $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_gender_m'] ?></option>
+                <option value="f" <?= ($this->gender == "f" ) ? 'checked="checked"' : "" ?>><?= $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_gender_f'] ?></option>
+              </select>
+            </div>
+        </div>
+        <div class="ym-g20 ym-gl">
+            <div class="widget widget-text ym-fbox-text" >
+              <label class="ym-fbox-text" for="ctrl_title_<?= $this->id ?>"><?= $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_title'][0] ?></label>
+              <input style="width: 100%" type="text" name="title" id="ctrl_title_<?= $this->id ?>" class="text" value="<?= $this->title ?>" placeholder="<?= $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_title'][0] ?>">
+            </div>
+        </div>
+    </div>
+
+    <div class="ym-fbox-wrap ym-grid">
+        <div class="ym-g33 ym-gl">
+            <div class="widget widget-text ym-fbox-text" style="margin-right: 10px;">
+              <label for="ctrl_firstname_<?= $this->id ?>"><?= $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_firstname'][0] ?></label>
+              <input style="width: 100%" type="text" name="firstname" id="ctrl_firstname_<?= $this->id ?>" class="text" value="<?= $this->firstname ?>" placeholder="<?= $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_firstname'][0] ?>">
+            </div>
+        </div>
+        <div class="ym-g33 ym-gl">
+
+            <div class="widget widget-text ym-fbox-text">
+              <label for="ctrl_lastname_<?= $this->id ?>" ><?= $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_lastname'][0] ?></label>
+              <input style="width: 100%" type="text" name="lastname" id="ctrl_lastname_<?= $this->id ?>" class="text" value="<?= $this->lastname ?>" placeholder="<?= $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_lastname'][0] ?>">
+            </div>
+        </div>
+    </div>
+
+    <div class="ym-fbox-wrap ym-grid">
+    </div>
+
+      </fieldset>
+
+      <fieldset>
+        <legend>E-Mail-Adresse</legend>
+
+        <div class="ym-fbox-wrap ym-grid">
+            <div class="ym-g66 ym-gl">
+
+            <div class="widget widget-text ym-fbox-text mandatory">
+
+              <label class="mandatory required" for="ctrl_email_<?= $this->id ?>" ><?= $this->emailLabel ?><sup class="ym-required">*</sup></label>
+              <input style="width: 100%" type="text" required="required" name="email" id="ctrl_email_<?= $this->id ?>" class="text required mandatory" value="<?= $this->email ?>" placeholder="<?= $this->emailLabel ?>">
+            </div>
+        </div>
+
+      </fieldset>
+
+      <?php if ($this->showChannels): ?>
+        <label for="ctrl_channels_<?= $this->id ?>" class="invisible"><?= $this->channelsLabel ?></label>
+        <div id="ctrl_channels_<?= $this->id ?>" class="checkbox_container">
+          <?php foreach ($this->channels as $id=>$title): ?>
+            <span><input type="checkbox" name="channels[]" id="opt_<?= $this->id ?>_<?= $id ?>" value="<?= $id ?>" class="checkbox"> <label for="opt_<?= $this->id ?>_<?= $id ?>"><?= $title ?></label></span>
+          <?php endforeach; ?>
+        </div>
+      <?php endif; ?>
+
+
+        <div class="ym-fbox-wrap ym-grid">
+            <div class="ym-g66 ym-gl" style="">
+                <div class="widget widget-button ym-fbox-button" style="border-top: none; ">
+                <input type="submit" name="submit" class="submit" value="<?= $this->submit ?>" style="margin-top: 0;">
+                </div>
+            </div>
+        </div>
+
+    </div>
+  </form>
+
+<?php endif; ?>
+
+
+<?php $this->endblock(); ?>

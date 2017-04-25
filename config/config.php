@@ -26,6 +26,8 @@ $GLOBALS['FE_MOD']['hoja_newsletter']['hoja_nl_reader'] = 'HoJa\\NLExtended\\Mod
 
 $GLOBALS['FE_MOD']['hoja_newsletter']['hoja_nl_unsubscribe_double'] = 'HoJa\\NLExtended\\ModuleUnsubscribeDouble';
 
+$GLOBALS['FE_MOD']['hoja_newsletter']['hoja_nl_subscribe_with_name'] = 'HoJa\\NLExtended\\ModuleSubscribeWithName';
+
 
 
 /**
