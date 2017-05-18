@@ -60,7 +60,7 @@ class ModuleUnsubscribeDouble extends \Module
         if (strlen($_SESSION['UNSUBSCRIBE_ERROR']))
         {
             $blnHasError = true;
-            $this->Template->mclass = 'error';
+            $this->Template->mclass = 'error form_error';
             $this->Template->message = $_SESSION['UNSUBSCRIBE_ERROR'];
             $_SESSION['UNSUBSCRIBE_ERROR'] = '';
         }

@@ -48,6 +48,13 @@ class ModuleNewsletterReader extends \Contao\ModuleNewsletterReader
             $GLOBALS['TL_CSS'][] = $file->path;         
         }
 
+        // parse simple newslettertokens
+        $html = NewsletterExtended::parseMySimpleTokens( $html, array (
+            'pid'         => $objNewsletter->pid,
+            'unsubscribe' => NewsletterExtended::getUnsubscriptionLink($objNewsletter->pid),
+        ));
+
+
 		// Replace insert tags
 		$html = $this->replaceInsertTags($html);
         

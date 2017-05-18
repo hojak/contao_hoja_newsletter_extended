@@ -6,7 +6,7 @@
     <p class="<?= $this->mclass ?>"><?= $this->message ?></p>
     <?php else: ?>
 
-  <form<?php if ($this->action): ?> action="<?= $this->action ?>"<?php endif; ?> id="<?= $this->formId ?>" method="post">
+  <form<?php if ($this->action): ?> action="<?= $this->action ?>"<?php endif; ?> id="<?= $this->formId ?>" method="post" class="ym-form">
     <div class="formbody">
       <input type="hidden" name="FORM_SUBMIT" value="<?= $this->formId ?>">
       <input type="hidden" name="REQUEST_TOKEN" value="{{request_token}}">
@@ -15,10 +15,24 @@
         <p class="<?= $this->mclass ?>"><?= $this->message ?></p>
       <?php endif; ?>
 
-      <label for="ctrl_email_<?= $this->id ?>" class="invisible"><?= $this->emailLabel ?></label>
-      <input type="text" name="email" id="ctrl_email_<?= $this->id ?>" class="text" value="<?= $this->email ?>" placeholder="<?= $this->emailLabel ?>">
+        <div class="ym-fbox-wrap ym-grid">
+            <div class="ym-g66 ym-gl">
 
-      <input type="submit" name="submit" class="submit" value="<?= $this->submit ?>">
+            <div class="widget widget-text ym-fbox-text mandatory">
+
+              <label class="mandatory required" for="ctrl_email_<?= $this->id ?>" ><?= $this->emailLabel ?><sup class="ym-required">*</sup></label>
+              <input style="width: 100%" type="text" required="required" name="email" id="ctrl_email_<?= $this->id ?>" class="text required mandatory" value="<?= $this->email ?>" placeholder="<?= $this->emailLabel ?>">
+            </div>
+        </div>
+
+
+        <div class="ym-fbox-wrap ym-grid">
+            <div class="ym-g66 ym-gl" style="">
+                <div class="widget widget-button ym-fbox-button" style="border-top: none; ">
+                <input type="submit" name="submit" class="submit" value="<?= $this->submit ?>" style="margin-top: 0;">
+                </div>
+            </div>
+        </div>
 
     </div>
   </form>
