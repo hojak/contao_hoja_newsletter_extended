@@ -137,8 +137,8 @@ class NewsletterExtended extends \Newsletter {
 		}
 
 		// Replace insert tags
-		$text = $this->replaceInsertTags($objNewsletter->text);
-		$html = $this->replaceInsertTags($html);
+		$text = $this->replaceInsertTags($objNewsletter->text, false);
+		$html = $this->replaceInsertTags($html, false);
 
 		// Convert relative URLs
 		$html = $this->convertRelativeUrls($html);
@@ -158,7 +158,7 @@ class NewsletterExtended extends \Newsletter {
             // Preview ((=> send test ))
             if (isset($_GET['preview'])) {
                 // get preview recipient
-                if (!\Validator::isEmail(\Input::get('recipient', true))) {
+                if (!\Validator::isEmail(\Input::get('recipient', true))  && ! preg_match ( '#.*@localhost$#', \Input::get('recipient', true))) {
                     $_SESSION['TL_PREVIEW_MAIL_ERROR'] = true;
                     $this->redirect($referer);
                 }
@@ -171,6 +171,7 @@ class NewsletterExtended extends \Newsletter {
                     'tracker_css' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $strEmail . '&preview=1&t=css',
                     'tracker_js'  => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $strEmail . '&preview=1&t=js',
                     'pid'   => $objNewsletter->pid,
+                    'email' => $strEmail,
                 ));
 
                 // Send
@@ -335,7 +336,7 @@ class NewsletterExtended extends \Newsletter {
         // get rid of base <> #-link problem
         $preview = preg_replace( '/href="#/', 'href="'.$this->Environment->url. "/".$iframeUrl.'#', $preview );
 
-        $preview = $this->replaceInsertTags($preview);
+        $preview = $this->replaceInsertTags($preview, false);
         //$preview = $this->prepareLinkTracking($preview, $objNewsletter->id, $this->User->email, '&preview=1');
 
         $simpleTokenData = array_merge ( $_SESSION['hoja_preview'], array (
@@ -623,7 +624,7 @@ class NewsletterExtended extends \Newsletter {
 			// Parse template
 			$html = $objTemplate->parse();
 			$html = $this->convertRelativeUrls($html);
-			$html = $this->replaceInsertTags($html);
+			$html = $this->replaceInsertTags($html, false);
 			// $html = $this->prepareLinkTracking($html, $objNewsletter->id, $arrRecipient['email'], $arrRecipient['extra'] ?: '');
 			$html = self::parseMySimpleTokens($html, $data );
 			
@@ -638,10 +639,15 @@ class NewsletterExtended extends \Newsletter {
 		// Deactivate invalid addresses
 		try
 		{
-			$objEmail->sendTo($arrRecipient['email']);
+			if ( ! $objEmail->sendTo($arrRecipient['email']) ) {
+                \Message::addInfo ("Versand fehlgeschlagen: "  . $arrRecipient['email']);
+            } else {
+                \Message::addInfo ("Versand ok: "  . $arrRecipient['email']);
+            }
 		}
 		catch (\Swift_RfcComplianceException $e)
 		{
+            \Message::addError ("Versand mit Ausnahme: "  . $arrRecipient['email']);
 			$_SESSION['REJECTED_RECIPIENTS'][] = $arrRecipient['email'];
 		}
 
