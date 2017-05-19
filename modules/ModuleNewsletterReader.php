@@ -52,6 +52,7 @@ class ModuleNewsletterReader extends \Contao\ModuleNewsletterReader
         $html = NewsletterExtended::parseMySimpleTokens( $html, array (
             'pid'         => $objNewsletter->pid,
             'unsubscribe' => NewsletterExtended::getUnsubscriptionLink($objNewsletter->pid),
+            'salutation'  => $objNewsletter->getRelated('pid')->hoja_salutation_default,
         ));
 
 
