@@ -34,3 +34,10 @@ $GLOBALS['FE_MOD']['hoja_newsletter']['hoja_nl_subscribe_with_name'] = 'HoJa\\NL
  * hook to use the newsletter defined prefix for the template names
  */
 $GLOBALS['TL_HOOKS']['parseTemplate'][] = array('tl_content_newsletter_extended', 'adaptTemplate');
+
+
+
+/**
+ * overwrite CSV-Import
+ **/
+$GLOBALS['BE_MOD']['content']['newsletter']['import'] = array ('HoJa\\NLExtended\\NewsletterExtended', 'importRecipients' );

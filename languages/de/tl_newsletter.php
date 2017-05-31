@@ -13,3 +13,18 @@ $GLOBALS['TL_LANG']['tl_newsletter']['hoja_status_string'] = "Empfänger: %d, Zu
 
 
 $GLOBALS['TL_LANG']['tl_newsletter']['actualize_preview'] = "Vorschau aktualisieren";
+
+$GLOBALS['TL_LANG']['tl_newsletter']['skip_first_line_label'] = "Erste Zeile überspringen?";
+$GLOBALS['TL_LANG']['tl_newsletter']['skip_first_line_hint'] = "Soll die erste Zeile des Imports übersprungen werden (weil sie die Spaltenüberschriften enthält)?";
+
+$GLOBALS['TL_LANG']['tl_newsletter']['csv_submit_hint'] =
+'<p>Hint: The columns of the CSV file should contain the folliowing information:</p>'
+.'<ol>'
+.'<li style="list-style: decimal">email</li>'
+.'<li style="list-style: decimal">first name</li>'
+.'<li style="list-style: decimal">last name</li>'
+.'<li style="list-style: decimal">gender (m or f)</li>'
+.'<li style="list-style: decimal">title</li>'
+.'<li style="list-style: decimal">form of address (formal or informal)</li>'
+.'<li style="list-style: decimal">additional remarks</li>'
+.'</ol>';

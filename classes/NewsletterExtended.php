@@ -851,4 +851,218 @@ class NewsletterExtended extends \Newsletter {
     }
 
 
+
+
+    /**
+     * method for key import
+     *
+     * overwrites the core Newsletters' import functionality with a check, that previously unsubscribed email addresses
+     * won't be imported again
+     *
+     * most of the code comes from the original Newsletter class of the core's newsletter module
+     *
+     * @return
+     */
+    public function importRecipients()
+	{
+		if (\Input::get('key') != 'import')
+		{
+			return '';
+		}
+
+		$this->import('BackendUser', 'User');
+		$class = $this->User->uploader;
+
+		// See #4086 and #7046
+		if (!class_exists($class) || $class == 'DropZone')
+		{
+			$class = 'FileUpload';
+		}
+
+		/** @var \FileUpload $objUploader */
+		$objUploader = new $class();
+
+		// Import CSS
+		if (\Input::post('FORM_SUBMIT') == 'tl_recipients_import')
+		{
+			$arrUploaded = $objUploader->uploadTo('system/tmp');
+
+			if (empty($arrUploaded))
+			{
+				\Message::addError($GLOBALS['TL_LANG']['ERR']['all_fields']);
+				$this->reload();
+			}
+
+			$time = time();
+			$intTotal = 0;
+			$intInvalid = 0;
+
+			foreach ($arrUploaded as $strCsvFile)
+			{
+				$objFile = new \File($strCsvFile, true);
+
+				if ($objFile->extension != 'csv')
+				{
+					\Message::addError(sprintf($GLOBALS['TL_LANG']['ERR']['filetype'], $objFile->extension));
+					continue;
+				}
+
+				// Get separator
+				switch (\Input::post('separator'))
+				{
+					case 'semicolon':
+						$strSeparator = ';';
+						break;
+
+					case 'tabulator':
+						$strSeparator = "\t";
+						break;
+
+					case 'linebreak':
+						$strSeparator = "\n";
+						break;
+
+					default:
+						$strSeparator = ',';
+						break;
+				}
+
+				$arrRecipients = array();
+				$resFile = $objFile->handle;
+
+				while(($arrRow = @fgetcsv($resFile, null, $strSeparator)) !== false)
+				{
+                    // chanched: keep csv array structure for additional data
+					$arrRecipients[] = $arrRow;
+				}
+
+                // changed: don't filter array
+				// $arrRecipients = array_filter(array_unique($arrRecipients));
+
+                // changed: load all addresses berforehand to a faster check
+                $addresses = $this->Database->prepare("select email from tl_newsletter_recipients WHERE pid = ? order by email")->execute ( \Input::get('id'))->fetchEach ('email');
+
+                // changed: create a hash for a faster search
+                $knownAddresses = array ();
+                foreach ( $addresses as $address)
+                    $knownAddresses [ $address ] = 1;
+
+
+                // changed: keep track of line number
+                $line = 0;
+				foreach ($arrRecipients as $arrData)
+				{
+                    $line ++;
+                    // changed: skip first line, if stated via checkbox
+                    if ( $line == 1 && \Input::post('skip_first_line')) {
+                        \Message::addInfo ($line . ": skipped");
+                        continue;
+                    }
+
+                    // changed: email address in first column
+                    list($email,$firstname,$lastname,$gender,$title,$form,$remarks) = $arrData;
+
+
+					// Skip invalid entries
+					if (!\Validator::isEmail($email))
+					{
+						$this->log('Recipient address "' . $email . '" seems to be invalid and has been skipped', __METHOD__, TL_ERROR);
+                        \Message::addInfo ( "$line: $email is not a valid address!");
+
+						++$intInvalid;
+						continue;
+					}
+
+					// Check whether the e-mail address exists
+                    if ( $knownAddresses [ $email ]) {
+                        \Message::addInfo ( "$line: $email already known: updated data");
+
+                        $this->Database->prepare (
+                                "UPDATE tl_newsletter_recipients set hoja_nl_firstname = ?, hoja_nl_lastname = ?, hoja_nl_gender = ?, hoja_nl_title = ?, hoja_nl_form_of_address = ? where email = ? and pid = ?"
+                            )->execute (
+                                $firstname, $lastname, $gender, $title, $form, $email, \Input::get('id')
+                            );
+                    } else {
+                        \Message::addInfo ( "$line: importet $email");
+
+
+                        $this->Database->prepare (
+                                "INSERT INTO tl_newsletter_recipients (pid,tstamp,email,active,addedOn,hoja_nl_firstname,hoja_nl_lastname,hoja_nl_gender,hoja_nl_title,hoja_nl_form_of_address,hoja_nl_remarks)"
+                                ." VALUES (?,?,?,?,?,?,?,?,?,?,?)"
+                            ) ->execute (
+                                \Input::get('id'),
+                                time(),
+                                $email, 1, time(),
+                                $firstname, $lastname, $gender, $title, $form,
+                                $remarks. "-- Imported " . date('Y-m-d')
+                            );
+
+						++$intTotal;
+                    }
+				}
+			}
+
+			\Message::addConfirmation(sprintf($GLOBALS['TL_LANG']['tl_newsletter_recipients']['confirm'], $intTotal));
+
+			if ($intInvalid > 0)
+			{
+				\Message::addInfo(sprintf($GLOBALS['TL_LANG']['tl_newsletter_recipients']['invalid'], $intInvalid));
+			}
+
+			\System::setCookie('BE_PAGE_OFFSET', 0, 0);
+			$this->reload();
+		}
+
+        // changed: load newsletter language file
+        $this->loadLanguageFile('tl_newsletter');
+
+        // changed: added hint for csv file format, added skip first line checkbox
+		// Return form
+		return '
+<div id="tl_buttons">
+<a href="'.ampersand(str_replace('&key=import', '', \Environment::get('request'))).'" class="header_back" title="'.specialchars($GLOBALS['TL_LANG']['MSC']['backBTTitle']).'" accesskey="b">'.$GLOBALS['TL_LANG']['MSC']['backBT'].'</a>
+</div>
+'.\Message::generate()
+.'<form action="'.ampersand(\Environment::get('request'), true).'" id="tl_recipients_import" class="tl_form" method="post" enctype="multipart/form-data">'
+.'<div class="tl_formbody_edit">'
+.$GLOBALS['TL_LANG']['tl_newsletter']['csv_submit_hint']
+.'
+<input type="hidden" name="FORM_SUBMIT" value="tl_recipients_import">
+<input type="hidden" name="REQUEST_TOKEN" value="'.REQUEST_TOKEN.'">
+<input type="hidden" name="MAX_FILE_SIZE" value="'.\Config::get('maxFileSize').'">
+
+<div class="tl_tbox">
+  <h3><label for="separator">'.$GLOBALS['TL_LANG']['MSC']['separator'][0].'</label></h3>
+  <select name="separator" id="separator" class="tl_select" onfocus="Backend.getScrollOffset()">
+    <option value="comma">'.$GLOBALS['TL_LANG']['MSC']['comma'].'</option>
+    <option value="semicolon">'.$GLOBALS['TL_LANG']['MSC']['semicolon'].'</option>
+    <option value="tabulator">'.$GLOBALS['TL_LANG']['MSC']['tabulator'].'</option>
+    <option value="linebreak">'.$GLOBALS['TL_LANG']['MSC']['linebreak'].'</option>
+  </select>'.(($GLOBALS['TL_LANG']['MSC']['separator'][1] != '') ? '
+  <p class="tl_help tl_tip">'.$GLOBALS['TL_LANG']['MSC']['separator'][1].'</p>' : '').'
+
+<div class="cbx">
+<div id="ctrl_guests" class="tl_checkbox_single_container">
+<input type="checkbox" name="skip_first_line" id="skip_first_line" class="tl_checkbox" value="1" onfocus="Backend.getScrollOffset()">
+<label for="skip_first_line">'.$GLOBALS['TL_LANG']['tl_newsletter']['skip_first_line_label'].'</label></div>
+<p class="tl_help tl_tip" title="">'.$GLOBALS['TL_LANG']['tl_newsletter']['skip_first_line_hint'].'</p>
+</div>
+
+  <h3>'.$GLOBALS['TL_LANG']['MSC']['source'][0].'</h3>'.$objUploader->generateMarkup().(isset($GLOBALS['TL_LANG']['MSC']['source'][1]) ? '
+  <p class="tl_help tl_tip">'.$GLOBALS['TL_LANG']['MSC']['source'][1].'</p>' : '').'
+</div>
+
+</div>
+
+<div class="tl_formbody_submit">
+
+<div class="tl_submit_container">
+  <input type="submit" name="save" id="save" class="tl_submit" accesskey="s" value="'.specialchars($GLOBALS['TL_LANG']['tl_newsletter_recipients']['import'][0]).'">
+</div>
+
+</div>
+</form>';
+	}
+
+
 }
