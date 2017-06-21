@@ -837,13 +837,8 @@ class NewsletterExtended extends \Newsletter {
 
         $unsubPage = $channel->getRelated('hoja_unsubscribe_page');
         if ( ! $unsubPage ) {
-
-            error_log ( "no unsub page!");
             return null;
-
         }
-
-        error_log ( "unsub_page is set!");
 
         $pageDetails = $unsubPage->loadDetails();
         $url = $pageDetails->getAbsoluteUrl();
