@@ -172,11 +172,10 @@ class NewsletterExtended extends \Newsletter {
                     'tracker_js'  => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $strEmail . '&preview=1&t=js',
                     'pid'   => $objNewsletter->pid,
                     'email' => $strEmail,
+                    'unsubscribe' => self::getUnsubscriptionLink($objNewsletter->pid),
                 ));
 
                 // Send
-                $objEmail = $this->generateEmailObject($objNewsletter, $arrAttachments);
-                $objNewsletter->email = $strEmail;
                 $replaceData = array_merge( $_SESSION['hoja_preview'], array (
                     'tracker_png' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=png',
                     'tracker_gif' => \Environment::get('base') . 'tracking/?n=' . $objNewsletter->id . '&e=' . $this->User->email . '&preview=1&t=gif',
@@ -187,6 +186,11 @@ class NewsletterExtended extends \Newsletter {
                     'unsubscribe' => self::getUnsubscriptionLink($objNewsletter->pid),
                 ));
                 $replaceData['salutation'] = self::getSalutation( $replaceData );
+
+                $objNewsletter->email = $strEmail;
+                $objNewsletter->content = self::parseMySimpleTokens( $html, $replaceData );
+                $objEmail = $this->generateEmailObject($objNewsletter, $arrAttachments);
+
                 $textContent = self::parseMySimpleTokens($text, $replaceData );
                 $this->sendNewsletter($objEmail, $objNewsletter, $arrRecipient, $textContent, $html);
 
@@ -830,13 +834,19 @@ class NewsletterExtended extends \Newsletter {
 
     public static function getUnsubscriptionLink ( $channelId, $recipient = null ) {
         $channel = \NewsletterChannelModel::findById ( $channelId );
-        $page = $channel->getRelated('hoja_unsubscribe_page')->loadDetails();
-        if ( $page === null )
+
+        $unsubPage = $channel->getRelated('hoja_unsubscribe_page');
+        if ( ! $unsubPage ) {
+
+            error_log ( "no unsub page!");
             return null;
 
-        $url = $page->getAbsoluteUrl();
+        }
 
+        error_log ( "unsub_page is set!");
 
+        $pageDetails = $unsubPage->loadDetails();
+        $url = $pageDetails->getAbsoluteUrl();
 
         if ( $recipient ) {
             if ( ! $recipient->hoja_nl_unsubscribe_id ) {
