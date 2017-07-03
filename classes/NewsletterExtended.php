@@ -89,7 +89,7 @@ class NewsletterExtended extends \Newsletter {
 
 		// Add default sender address
 		if ($objNewsletter->sender == '') {
-			list($objNewsletter->senderName, $objNewsletter->sender) = \String::splitFriendlyEmail($GLOBALS['TL_CONFIG']['adminEmail']);
+			list($objNewsletter->senderName, $objNewsletter->sender) = \StringUril::splitFriendlyEmail($GLOBALS['TL_CONFIG']['adminEmail']);
 		}
 
 		$arrAttachments = array();
@@ -534,7 +534,7 @@ class NewsletterExtended extends \Newsletter {
 		$arrTags = preg_split('/(\{[^\}]+\})/', $strString, -1, PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);
 
 		// Replace the tags
-		foreach ($arrTags as $strTag)
+		foreach ($arrTags as $strTag)       
 		{
 			if (strncmp($strTag, '{if', 3) === 0)
 			{
@@ -598,7 +598,7 @@ class NewsletterExtended extends \Newsletter {
 
 
 		// Prepare the text content
-		$text = \String::parseSimpleTokens($text, $data);;
+		$text = \StringUtil::parseSimpleTokens($text, $data);;
 		// add piwik campaign links
 		$text = $this->addPiwikCampaignText ( $text, $objNewsletter->hoja_piwik_campaign );
 		
