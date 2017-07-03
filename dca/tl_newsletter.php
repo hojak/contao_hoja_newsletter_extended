@@ -34,7 +34,7 @@ array_insert($GLOBALS['TL_DCA']['tl_newsletter']['list']['operations'], 1, array
 
 $GLOBALS['TL_DCA']['tl_newsletter']['palettes']['default'] 	= str_replace(
 		';{html_legend},content;', 
-		'{hoja_files_legend},hoja_template_prefix,hoja_css_file;{hoja_tracking_legend},hoja_piwik_campaign;',
+		';{hoja_files_legend},hoja_template_prefix,hoja_css_file;{hoja_tracking_legend},hoja_piwik_campaign;',
 		$GLOBALS['TL_DCA']['tl_newsletter']['palettes']['default']
 );
 
