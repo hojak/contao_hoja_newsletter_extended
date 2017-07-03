@@ -23,6 +23,11 @@ $GLOBALS['TL_DCA']['tl_newsletter']['config']['switchToEdit'] = true;
 $GLOBALS['TL_DCA']['tl_newsletter']['config']['onload_callback'] = array(array('tl_newsletter_extended', 'checkPermission'));
 $GLOBALS['TL_DCA']['tl_newsletter']['list']['sorting']['child_record_callback'] = array('tl_newsletter_extended', 'listNewsletterArticles');
 $GLOBALS['TL_DCA']['tl_newsletter']['list']['operations']['edit']['href'] = 'table=tl_content';
+$GLOBALS['TL_DCA']['tl_newsletter']['list']['operations']['show_sent'] = array (
+    'href' => 'table=tl_hoja_newsletter_sent',
+    'label' => &$GLOBALS['TL_LANG']['tl_newsletter']['show_sent'],
+    'icon' => 'db.gif',
+);
 
 array_insert($GLOBALS['TL_DCA']['tl_newsletter']['list']['operations'], 1, array(
 	'editheader' => array(

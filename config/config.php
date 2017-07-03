@@ -17,6 +17,7 @@
 
 
 $GLOBALS['BE_MOD']['content']['newsletter']['tables'][]  = 'tl_content';
+$GLOBALS['BE_MOD']['content']['newsletter']['tables'][]  = 'tl_hoja_newsletter_sent';
 
 $GLOBALS['BE_MOD']['content']['newsletter']['send'] = array('HoJa\\NLExtended\\NewsletterExtended', 'send');
 
