@@ -14,5 +14,5 @@ $GLOBALS['TL_LANG']['tl_newsletter_channel']['hoja_unsubscribe_page'] = array ('
 
 
 $GLOBALS['TL_LANG']['tl_newsletter_channel']['hoja_default_salutation'] = 'Sehr geehrte Leserin, sehr geehrter Leser,';
-$GLOBALS['TL_LANG']['tl_newsletter_channel']['hoja_default_informal_salutation'] = 'Hallo ##prename##,';
+$GLOBALS['TL_LANG']['tl_newsletter_channel']['hoja_default_informal_salutation'] = 'Hallo ##firstname##,';
 $GLOBALS['TL_LANG']['tl_newsletter_channel']['hoja_default_formal_salutation'] = 'Sehr geehrte(r) ##gender## ##title## ##lastname##,';

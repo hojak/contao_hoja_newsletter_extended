@@ -19,3 +19,7 @@ $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_unsubscribed_date'] = a
 $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_unsubscribed_pending'] = array ('Deaktivierung verschickt?','Deaktivierung verschickt?');
 $GLOBALS['TL_LANG']['tl_newsletter_recipients']['hoja_nl_remarks'] = array ('Bemerkungen (intern)','Bemerkungen (intern)');
 
+
+
+
+$GLOBALS['TL_LANG']['tl_newsletter_recipients']['ignored'] = '%d Zeilen wurden ignoriert, weil die jeweilige E-Mail-Adresse bereits im Import enthalten war!';

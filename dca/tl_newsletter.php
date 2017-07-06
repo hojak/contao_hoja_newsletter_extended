@@ -23,10 +23,20 @@ $GLOBALS['TL_DCA']['tl_newsletter']['config']['switchToEdit'] = true;
 $GLOBALS['TL_DCA']['tl_newsletter']['config']['onload_callback'] = array(array('tl_newsletter_extended', 'checkPermission'));
 $GLOBALS['TL_DCA']['tl_newsletter']['list']['sorting']['child_record_callback'] = array('tl_newsletter_extended', 'listNewsletterArticles');
 $GLOBALS['TL_DCA']['tl_newsletter']['list']['operations']['edit']['href'] = 'table=tl_content';
+
+// remove standard send action in favour of the new preview stage
+unset ( $GLOBALS['TL_DCA']['tl_newsletter']['list']['operations']['send'] );
+
+$GLOBALS['TL_DCA']['tl_newsletter']['list']['operations']['preview'] = array (
+    'href'  => 'key=preview',
+    'label' => &$GLOBALS['TL_LANG']['tl_newsletter']['preview'],
+    'icon'  => 'system/modules/hoja_newsletter_extended/assets/preview.png',
+);
+
 $GLOBALS['TL_DCA']['tl_newsletter']['list']['operations']['show_sent'] = array (
-    'href' => 'table=tl_hoja_newsletter_sent',
+    'href' => 'key=protocol',
     'label' => &$GLOBALS['TL_LANG']['tl_newsletter']['show_sent'],
-    'icon' => 'db.gif',
+    'icon' => 'system/modules/hoja_newsletter_extended/assets/emails.png',
 );
 
 array_insert($GLOBALS['TL_DCA']['tl_newsletter']['list']['operations'], 1, array(

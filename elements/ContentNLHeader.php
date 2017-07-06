@@ -23,8 +23,7 @@ class ContentNLHeader extends \Contao\ContentElement
 	
 	public function generate () 
 	{
-
-		if (TL_MODE == 'BE' && \Input::get('key') != send)
+		if (TL_MODE == 'BE' && !defined ( 'NEWSLETTER_CONTENT_PREVIEW' ))
 		{
 			$objTemplate = new \BackendTemplate('be_wildcard');
 

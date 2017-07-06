@@ -28,14 +28,15 @@ $GLOBALS['TL_DCA']['tl_hoja_newsletter_sent'] = array
 	(
 		'sorting' => array
 		(
-			'mode'                    => 4,
-			'fields'                  => array('recipient, sent_at desc'),
+			'mode'                    => 1,
+			'fields'                  => array('recipient, sent_at'),
             'headerFields'            => array ('subject', 'sent', 'date'),
 		),
 		'label' => array
 		(
-			'fields'                => array('recipient','sent_at',),
+			'fields'                => array('recipient','sent_at'),
             'showColumns'           => true,
+            // 'label_callback'        => array ('tl_hoja_newsletter_sent', 'getRowLabel' ),
 		),        
 		'global_operations' => array
 		(
@@ -74,7 +75,7 @@ $GLOBALS['TL_DCA']['tl_hoja_newsletter_sent'] = array
 			'sql'                     => "int(10) unsigned NOT NULL auto_increment"
 		),
 		'pid' => array (
-			'foreignKey'              => 'tl_newsletter.alias',
+			'foreignKey'              => 'tl_newsletter.subject',
 			'relation'                => array ('type' => 'hasOne', 'load' => 'eager'),
             'sql'                     => "int(10) unsigned NOT NULL default '0'",
 		),		
@@ -84,16 +85,33 @@ $GLOBALS['TL_DCA']['tl_hoja_newsletter_sent'] = array
 		),
         'recipient' => array (
             'label'                   => &$GLOBALS['TL_LANG']['tl_hoja_newsletter_sent']['recipient'],
-			'foreignKey'              => 'tl_newsletter_recipient.email',
+			'foreignKey'              => 'tl_newsletter_recipients.email',
 			'relation'                => array ('type' => 'hasOne', 'load' => 'eager',),
             'sql'                     => "int(10) unsigned NOT NULL default '0'",
         ),
         'sent_at' => array (
             'label'                   => &$GLOBALS['TL_LANG']['tl_hoja_newsletter_sent']['sent_at'],
-			'sql'                     => "int(10) unsigned NOT NULL default '0'",            
+            'sql'                     => "int(10) unsigned NOT NULL default '0'", 
+            'eval'                    => array ('rgxp' => 'datim',),
+        ),
+        'status_code' => array (
+            'label'                   => &$GLOBALS['TL_LANG']['tl_hoja_newsletter_sent']['status_code'],
+            'sql'                     => "smallint(5) unsigned NOT NULL default '0'",
+            'inputType'               => 'select',
+            'options'                 => $GLOBALS['TL_LANG']['tl_hoja_newsletter_sent']['status_options'],
         ),
 	),
 
 );
 
 
+/*
+
+class tl_hoja_newsletter_sent extends \Backend {
+    
+    public function getRowLabel ($row, $label, DataContainer $dc, $args ) {
+        return $label;
+    }
+}
+
+*/
