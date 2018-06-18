@@ -81,3 +81,19 @@ $GLOBALS['TL_DCA']['tl_newsletter_recipients']['fields']['hoja_nl_remarks'] = ar
 	'sql'		=> "text NULL",
 );
 
+
+/** add name to recipient list **/
+
+$GLOBALS['TL_DCA']['tl_newsletter_recipients']['list']['sorting']['child_record_callback'] = array ( 'tl_newsletter_recipients_extended', 'listRecipient' );
+
+class tl_newsletter_recipients_extended extends tl_newsletter_recipients {
+    public function listRecipient ( $row ) {
+        $super = parent::listRecipient ( $row );
+
+        if ( $row['hoja_nl_firstname'] || $row['hoja_nl_lastname']) {
+            $super = preg_replace ( "/<span/", " - ". $row['hoja_nl_firstname'] . " " . $row['hoja_nl_lastname'] . " <span", $super);
+        }
+
+        return $super;
+    }
+}
