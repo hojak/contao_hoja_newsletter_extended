@@ -126,9 +126,10 @@ class ModuleUnsubscribeDouble extends \Module
 
         if (($subscriptions = \NewsletterRecipientsModel::findBy(array("email=? AND active=1"), $email)) !== null) {
             // unify tokens
-            self::ensureUnsubscrioptionId ( $subscription );
+            self::ensureUnsubscriptionId ( $subscriptions );
 
             $subscriptions->first();
+            $token = $subscriptions->hoja_nl_unsubscribe_id;
 
             $parseData = array(
                 'token'      => $token,
@@ -171,6 +172,8 @@ class ModuleUnsubscribeDouble extends \Module
                 $token = md5(uniqid(mt_rand(), true));
             } while ( \NewsletterRecipientsModel::findBy ( array ("hoja_nl_unsubscribe_id=?"), $token ));
         }
+
+
 
         foreach ( $subscriptions as $subscription ) {
             if ( $subscription->hoja_nl_unsubscribe_id != $token ) {
