@@ -22,7 +22,7 @@ Ihre Contao-Webseite
 Diese Mail wurde automatisch erstellt.'
 );
 
-
+$GLOBALS['TL_LANG']['tl_module']['hoja_nl_mail_legend'] = 'Einstellungen zum Mail-Template';
 
 
 
