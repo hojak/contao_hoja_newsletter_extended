@@ -573,6 +573,7 @@ class NewsletterExtended extends \Newsletter {
 <form action="'.$this->addToUrl ('key=preview') .'" id="tl_newsletter_send" class="tl_form" method="post">
 <div class="tl_formbody_edit tl_newsletter_send">
 <input type="hidden" name="token" value="' . $strToken . '">
+<input type="hidden" name="REQUEST_TOKEN" value="' . REQUEST_TOKEN . '">
 <table class="prev_header">
   <tr class="row_0">
     <td class="col_0">' . $GLOBALS['TL_LANG']['tl_newsletter']['from'] . '</td>
