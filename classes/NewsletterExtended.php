@@ -198,7 +198,7 @@ class NewsletterExtended extends \Newsletter {
                 )->execute ( time(), $numberSent, $numberFailure, $objNewsletter->id );
             }
             
-            $backUrl = $this->addToUrl ( 'key=&counter=');
+            $backUrl = $this->addToUrl ( 'key=&counter=&mpc=&timeout=&id=' . $objNewsletter->pid);
             return 
                 '<div id="tl_buttons">'
                 .'<a href="'.$backUrl.'". class="header_back" title="" accesskey="b" onclick="Backend.getScrollOffset()">'.$GLOBALS['TL_LANG']['MSC']['backBT'].'</a>'
@@ -230,8 +230,8 @@ class NewsletterExtended extends \Newsletter {
                 .'</div>';
         } else {
             $refreshUrl = $this->addToUrl ( "counter=" . ($counter+1));
-            $backUrl = $this->addToUrl ( 'key=preview&counter=');
-            
+            $backUrl = $this->addToUrl ( 'key=&counter=&mpc=&timeout=&id=' . $objNewsletter->pid);
+
             $result =
                 '<div class="tl_formbody_edit tl_newsletter_send">'
                 .'<div>'
