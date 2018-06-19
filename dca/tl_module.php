@@ -8,6 +8,7 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['hoja_nl_reader']    =
 $GLOBALS['TL_DCA']['tl_module']['palettes']['hoja_nl_unsubscribe_double'] =
     '{title_legend},name,headline,type;'
     .'{redirect_legend},jumpTo;'
+    .'{template_legend:hide},customTpl;'
     .'{hoja_nl_mail_legend},hoja_nl_unsubscribe_mail;'
     .'{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
 
@@ -16,6 +17,7 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['hoja_nl_subscribe_with_name'] =
     '{title_legend},name,headline,type;'
     .'{config_legend},nl_channels,nl_hideChannels;'
     .'{redirect_legend},jumpTo;{email_legend:hide},nl_subscribe;'
+    .'{template_legend:hide},customTpl;'
     //.'{template_legend:hide},nl_template,customTpl;'
     .'{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
 
